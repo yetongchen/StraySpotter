@@ -1,4 +1,4 @@
-import { dbConnection } from './mongoConnection';
+import { dbConnection } from './mongoConnection.js';
 
 
 const getCollectionFn = (collection) => {
@@ -6,7 +6,7 @@ const getCollectionFn = (collection) => {
 
     return async () => {
         if (!_col) {
-            const db = await dbConnection.dbConnection();
+            const db = await dbConnection();
             _col = await db.collection(collection);
         }
 

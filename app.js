@@ -1,16 +1,13 @@
 import express from "express";
 import exphbs from "express-handlebars";
+import methodOverride from "method-override";
+import configRoutes from './routes/index.js';
+
 const app = express();
-const configRoutes = require("./routes");
-
-import configRoutes from "./routes/index.js";
-const exphbs = require("express-handlebars");
-const methodOverride = require("method-override");
-var bodyParser = require("body-parser");
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.engine("handlebars", exphbs.engine({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
@@ -19,7 +16,6 @@ app.use(async (req, res, next) => {
   const timeStamp = new Date().toUTCString();
   const method = req.method;
   const reqRoute = req.originalUrl;
-  const userAuthState = req.session.user ? true : false;
 
   console.log(
     "[",
@@ -28,8 +24,6 @@ app.use(async (req, res, next) => {
     ":",
     method,
     reqRoute,
-    "userAuthState: ",
-    userAuthState
   );
 
   next();

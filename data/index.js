@@ -1,9 +1,7 @@
-import location from "./location";
-import post from "./post";
-import user from "./user";
+import location from "./location.js";
+import post from "./post.js";
+import user from "./user.js";
 
-export default {
-    locationData: location,
-    postData: post,
-    userData: user,
-};
+export const userData = user;
+export const postData = post;
+export const locationData = location;

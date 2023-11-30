@@ -1,8 +1,8 @@
-import {post} from "../config/mongoCollection";
-import {user} from "../config/mongoCollection";
-import {location} from "../config/mongoCollection";
+import {post} from "../config/mongoCollection.js";
+import {user} from "../config/mongoCollection.js";
+import {location} from "../config/mongoCollection.js";
 import {ObjectId} from "mongodb";
-import vaidation from "../validation";
+import vaidation from "../validation.js";
 
 export const createPost = async (
     user_id,

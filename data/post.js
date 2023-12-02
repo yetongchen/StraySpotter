@@ -1,10 +1,38 @@
-import {post} from "../config/mongoCollection.js";
-import {user} from "../config/mongoCollection.js";
-import {location} from "../config/mongoCollection.js";
+import {post} from "../config/mongoCollection";
+import {user} from "../config/mongoCollection";
+import {location} from "../config/mongoCollection";
 import {ObjectId} from "mongodb";
-import vaidation from "../validation.js";
+import vaidation from "../validation";
 
-export const createPost = async (
+// Import AWS SDK
+import AWS from 'aws-sdk';
+import fs from 'fs';
+
+const AWS_ACCESS_KEY_ID = 'AKIAZTNDQJ645M3YCGGY';
+const AWS_SECRET_ACCESS_ID = '+9Oy/Dtz//0rXE92N2NwwntNPV1wAZY2IFCEbl+t';
+const bucketName = 'cs545project';
+
+// Create an S3 instance
+const s3 = new AWS.S3();
+
+// Configure the AWS region and credentials
+AWS.config.update({ region: 'us-east-1' }); 
+AWS.config.update({ accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_ID }); 
+
+/**
+ * @param {ObjectId} _id - the unique id of the post
+ * @param {string} user_id - the unique id of user of this post
+ * @param {string} species - the species of the animal
+ * @param {String} gender - the gender of the animal
+ * @param {String} health_condition - the health condition
+ * @param {String} description
+ * @param {String} found_datatime - the latest date found
+ * @param {String} photo_url - the URL of the photo
+ * @param {String} location_id - the id of the location
+ */
+
+
+const createPost = async (
     user_id,
     species,
     health_condition,
@@ -23,12 +51,15 @@ export const createPost = async (
         // generate datetime
         const datetime = vaidation.generateCurrentDate();
 
+        photo_url = createURL(photo_url)
+
         // save post to database
         const singlePost = {
             user_id: user_id,
             species: species,
             health_condition: health_condition,
             description: description,
+            found_datatime: datetime,
             photo_url: photo_url,
             location_id: location_id
         };
@@ -59,10 +90,10 @@ export const createPost = async (
     } catch (error) {
         throw error;
     }
-}
+};
 
 
-export const removePostById = async (
+const removePostById = async (
     post_id
 ) => {
     try {
@@ -85,9 +116,9 @@ export const removePostById = async (
     } catch (error) {
         throw error;
     }
-}
+};
 
-export const updatePost = async (
+const updatePost = async (
     post_id,
     user_id,
     species,
@@ -105,6 +136,20 @@ export const updatePost = async (
         description = vaidation.validateDescription(description);
         location_id = vaidation.validateLocation(location_id);
 
+        // generate datetime
+        const datetime = vaidation.generateCurrentDate();
+
+        // update new photo
+        if (photo_url !== null) {
+            photo_url = createURL(photo_url);
+        } else {
+            
+            // or use original photo
+            const temp = await postCollection.findOne({_id: new ObjectId(post_id)});
+            photo_url = temp.photo_url;
+        }
+
+        
         const postCollection = await post();
         const updatedPost = await postCollection.findOneAndUpdate(
             {_id: new ObjectId(post_id)},
@@ -114,6 +159,7 @@ export const updatePost = async (
                     species: species,
                     health_condition: health_condition,
                     description: description,
+                    found_datatime: datetime,
                     photo_url: photo_url,
                     location_id: location_id,
                 },
@@ -129,10 +175,10 @@ export const updatePost = async (
     } catch (error) {
         throw error;
     }
-}
+};
 
 
-export const getPostByPostId = async (
+const getPostByPostId = async (
     post_id
 ) => {
     try {
@@ -149,9 +195,9 @@ export const getPostByPostId = async (
     } catch (error) {
         throw error;
     }
-}
+};
 
-export const getPostByUserId = async (
+const getPostByUserId = async (
     user_id
 ) => {
     try {
@@ -164,9 +210,9 @@ export const getPostByUserId = async (
     } catch (error) {
         throw error;
     }
-}
+};
 
-export const getAllPosts = async () => {
+const getAllPosts = async () => {
     try {
         const postCollection = await post();
         const allPosts = await postCollection.find({}).toArray();
@@ -175,9 +221,9 @@ export const getAllPosts = async () => {
     } catch (error) {
         throw error;
     }
-}
+};
 
-export const getLocationByPostId = async (
+const getLocationByPostId = async (
     post_id
 ) => {
     try {
@@ -204,7 +250,42 @@ export const getLocationByPostId = async (
     } catch (error) {
         throw error;
     }
-}
+};
+
+const createURL = async (filePath) => {
+
+   // Read the file from the file system
+   const fileContent = fs.readFileSync(filePath);
+
+   // Generate a random string for the file name
+   const randomString = Math.random().toString(36).substring(2, 15) 
+                      + Math.random().toString(36).substring(2, 15);
+   // Extract filename
+   const originalFileName = filePath.split('/').pop();
+
+   const currentFileName = randomString + '.' + originalFileName.slice(((originalFileName.lastIndexOf(".") - 1) >>> 0) + 2);
+
+   // Setting up S3 upload parameters
+   const params = {
+       Bucket: bucketName,
+       Key: currentFileName, // File name you want to save as in S3
+       Body: fileContent
+   };
+
+   // Uploading files to the bucket
+   s3.upload(params, function(err, data) {
+       if (err) {
+           console.log("Error", err);
+         } else {
+           console.log("Successfully uploaded file to S3");
+           const url = `https://${bucketName}.s3.amazonaws.com/${currentFileName}`;
+           console.log("File URL:", url);
+         }
+   });
+
+    
+};
+
 export default {
     createPost,
     removePostById,
@@ -214,4 +295,5 @@ export default {
     // getPostByEventId,
     getAllPosts,
     getLocationByPostId,
+    createURL,
 };

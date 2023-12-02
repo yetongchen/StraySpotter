@@ -113,7 +113,7 @@ const createLocation = async (address, post_id) => {
 };
 
 const getLocationById = async (location_id) => {
-    location_id = validation.validateId(location_id);
+    location_id = validation.checkStringObjectID(location_id);
     const locationCollection = await location();
     const locationInfo = await locationCollection.findOne({_id: new ObjectId(location_id)});
     if (!locationInfo) throw "Can not find location";

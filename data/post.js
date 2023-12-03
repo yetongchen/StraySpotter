@@ -12,9 +12,6 @@ const AWS_ACCESS_KEY_ID = 'AKIAZTNDQJ645M3YCGGY';
 const AWS_SECRET_ACCESS_ID = '+9Oy/Dtz//0rXE92N2NwwntNPV1wAZY2IFCEbl+t';
 const bucketName = 'cs545project';
 
-// Create an S3 instance
-const s3 = new AWS.S3();
-
 // Configure the AWS region and credentials
 AWS.config.update({
     region: 'us-east-1',
@@ -274,6 +271,9 @@ const getLocationByPostId = async (
 
 const createURL = async (filePath) => {
 
+    // Create an S3 instance
+    const s3 = new AWS.S3();
+    
     // Read the file from the file system
     const fileContent = fs.readFileSync(filePath);
 
@@ -312,5 +312,6 @@ export default {
     getPostByPostId,
     getPostByUserId,
     getAllPosts,
-    getLocationByPostId
+    getLocationByPostId,
+    createURL
 };

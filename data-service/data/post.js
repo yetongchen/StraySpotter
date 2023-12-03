@@ -26,7 +26,7 @@ AWS.config.update({
  * @param {String} gender - the gender of the animal
  * @param {String} health_condition - the health condition
  * @param {String} description
- * @param {String} found_datatime - the latest date found
+ * @param {String} found_datetime - the latest date found
  * @param {String} photo_url - the URL of the photo
  * @param {String} location_id - the id of the location
  */
@@ -53,7 +53,11 @@ const createPost = async (
         // generate datetime
         const datetime = validation.generateCurrentDate();
 
-        photo_url = await createURL(photo_url)
+        if (! photo_url) {
+            photo_url = null;
+        } else {
+            photo_url = await createURL(photo_url);
+        }
 
         // save post to database
         const singlePost = {
@@ -62,7 +66,7 @@ const createPost = async (
             gender: gender,
             health_condition: health_condition,
             description: description,
-            found_datatime: datetime,
+            found_datetime: datetime,
             photo_url: photo_url,
             location_id: null
         };
@@ -121,7 +125,7 @@ const removePostById = async (
         if (!deletedPost) {
             throw "Could not find or delete the post.";
         }
-
+        deletedPost._id = deletedPost._id.toString();
         return deletedPost;
     } catch (error) {
         throw error;
@@ -176,7 +180,7 @@ const updatePost = async (
                     gender: gender,
                     health_condition: health_condition,
                     description: description,
-                    found_datatime: oldPost.found_datatime,
+                    found_datetime: oldPost.found_datetime,
                     photo_url: photo_url,
                     location_id: location_id,
                 },
@@ -187,7 +191,7 @@ const updatePost = async (
         if (!updatedPost) {
             throw "Could not find or update the post.";
         }
-
+        updatedPost._id = updatedPost._id.toString();
         return updatedPost;
     } catch (error) {
         throw error;
@@ -221,7 +225,11 @@ const getPostByUserId = async (
         user_id = validation.validateId(user_id);
 
         const postCollection = await post();
-        const posts = await postCollection.find({ user_id: user_id }).toArray();
+        let posts = await postCollection.find({ user_id: user_id }).toArray();
+        posts = posts.map((p) => {
+            p._id = p._id.toString();
+            return p;
+        });
 
         return posts;
     } catch (error) {
@@ -232,7 +240,11 @@ const getPostByUserId = async (
 const getAllPosts = async () => {
     try {
         const postCollection = await post();
-        const allPosts = await postCollection.find({}).toArray();
+        let allPosts = await postCollection.find({}).toArray();
+        allPosts = allPosts.map((p) => {
+            p._id = p._id.toString();
+            return p;
+        });
 
         return allPosts;
     } catch (error) {

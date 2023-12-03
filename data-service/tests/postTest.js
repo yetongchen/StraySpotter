@@ -15,7 +15,7 @@ let post1 = await postData.createPost(
     "Female",
     "Good",
     "Small brown dog with a fluffy tail, very friendly.",
-    "D:\\code\\StraySpotter\\public\\images\\dog1.jpg",
+    "public\\images\\dog1.jpg",
     "1 Castle Point Terrace, Hoboken, NJ"
 );
 console.log(post1);
@@ -25,7 +25,7 @@ let post2 = await postData.createPost(
     "Male",
     "Bad",
     "Black and white cat, appears to have a limp in its right front paw.",
-    "D:\\code\\StraySpotter\\public\\images\\cat1.jpg",
+    "public\\images\\cat1.jpg",
     "400 Garden St, Hoboken, NJ"
 );
 console.log(post2);
@@ -35,7 +35,7 @@ let post3 = await postData.createPost(
     "Female",
     "Normal",
     "White rabbit with red eyes, very timid, seems underfed.",
-    "D:\\code\\StraySpotter\\public\\images\\rabbit1.jpg",
+    "public\\images\\rabbit1.jpg",
     "Wittpenn Walk, Hoboken, NJ"
 );
 console.log(post3);
@@ -48,7 +48,7 @@ let updatedpost1 = await postData.updatePost(
     "Male",
     "Good",
     "Small brown dog with a fluffy tail, very friendly.",
-    "D:\\code\\StraySpotter\\public\\images\\dog1.jpg",
+    null,
     "Dobbelaar Field, Hoboken, NJ"
 );
 console.log(updatedpost1);
@@ -73,5 +73,5 @@ console.log("Should return post 2 & 3");
 let posts = await postData.getAllPosts();
 console.log(posts);
 
-await db.dropDatabase();
+//await db.dropDatabase();
 await closeConnection();  

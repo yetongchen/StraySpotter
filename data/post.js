@@ -273,7 +273,7 @@ const createURL = async (filePath) => {
 
     // Create an S3 instance
     const s3 = new AWS.S3();
-    
+
     // Read the file from the file system
     const fileContent = fs.readFileSync(filePath);
 
@@ -292,16 +292,18 @@ const createURL = async (filePath) => {
         Body: fileContent
     };
 
-    // Uploading files to the bucket
-    s3.upload(params, function(err, data) {
-        if (err) {
-            console.log("Error", err);
-        } else {
-            console.log("Successfully uploaded file to S3");
-            const url = `https://${bucketName}.s3.amazonaws.com/${currentFileName}`;
-            console.log("File URL:", url);
-            return url;
-        }
+    return new Promise((resolve, reject) => {
+        s3.upload(params, function(err, data) {
+            if (err) {
+                console.log("Error", err);
+                reject(err);
+            } else {
+                console.log("Successfully uploaded file to S3");
+                const url = `https://${bucketName}.s3.amazonaws.com/${currentFileName}`;
+                console.log("File URL:", url);
+                resolve(url);
+            }
+        });
     });
 };
 

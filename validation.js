@@ -90,12 +90,24 @@ const exportedMethods = {
     },
     generateCurrentDate(){
         const date = new Date();
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        const hour = date.getHours();
-        const minutes = date.getMinutes();
-        const curDate = `${month}/${day}/${year} ${hour}:${minutes}`;
+        // const year = date.getFullYear();
+        // const month = date.getMonth() + 1;
+        // const day = date.getDate();
+        // const hour = date.getHours();
+        // const minutes = date.getMinutes();
+        // const curDate = `${month}/${day}/${year} ${hour}:${minutes}`;
+
+        const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZoneName: 'short' // This adds the time zone information
+        };
+        const curDate = new Intl.DateTimeFormat('en-US', options).format(date);
         return curDate;
     },
     validateDateTime(inputDate){

@@ -1,7 +1,8 @@
 import express from "express";
 const router = express.Router();
 import validation from "../validation.js";
-import {getAllPosts, getPostByPostId, removePostById} from "../data/post"
+//import {getAllPosts, getPostByPostId, removePostById} from "../data/post.js";
+import posts from "../data/post.js";
 
 router.route("/")
     .get(async (req, res) => {
@@ -9,7 +10,7 @@ router.route("/")
         if (req.session.user)
             alreadyLoggedIn = true;
         try {
-            const postData = await getAllPosts();
+            const postData = await posts.getAllPosts();
             console.log(postData);
             res.render('allPosts', {
                 postData: postData,
@@ -32,7 +33,7 @@ router.route("/detail/:id")
         if (req.session.user)
             alreadyLoggedIn = true;
         try {
-            let post = await getPostByPostId(id);
+            let post = await posts.getPostByPostId(id);
             return res.render('singlePost', {
                 title: "Post Details",
                 id: id,
@@ -51,8 +52,8 @@ router.route("/detail/:id")
         if (req.session.user){
             let post_id = validation.validateId(req.params.id);
             try {
-                const postData = await getPostByPostId(post_id);
-                await removePostById(post_id);
+                const postData = await posts.getPostByPostId(post_id);
+                await posts.removePostById(post_id);
                 return res.status(200).redirect('/user/userCenter/' + post_id);
             } catch (e) {
                 return res.render('error', {

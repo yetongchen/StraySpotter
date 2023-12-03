@@ -2,8 +2,8 @@ import express from "express";
 
 const router = express.Router();
 
-import validation from "../validation";
-import userData from "../data/user"
+import validation from "../validation.js";
+import userData from "../data/user.js";
 
 router.route("/user/:user_id").get(async (req, res) => {
 

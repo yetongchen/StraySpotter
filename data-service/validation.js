@@ -73,7 +73,7 @@ const exportedMethods = {
         if (typeof health !== "string" || health.trim().length === 0)
             throw "Error: health must be a non-empty string";
         health = health.trim();
-        const vaildAnimalHealthCondition = ["Good", "Normal", "Bad"];
+        const vaildAnimalHealthCondition = ["Healthy", "Injured", "Sick", "Malnourished", "Pregnant", "Unknown"];
         if (!vaildAnimalHealthCondition.includes(health))
             throw `Error: ${health} is not an vaild animal Health Condition.`;
         return health;
@@ -194,12 +194,11 @@ const exportedMethods = {
         if(typeof gender !== "string" || gender.trim().length === 0){
             `Error: gender should be a valid string (no empty spaces)`;
         }
-        const trimmedGender = gender.trim().toLowerCase();
 
-        if (trimmedGender !== "male" && trimmedGender !== "female") {
-            throw "Error: Gender must be either 'male' or 'female'";
+        if (gender !== "Male" && gender !== "Female") {
+            throw "Error: Gender must be either 'male' or 'Female'";
         }
-        return trimmedGender;
+        return gender;
     }
 }
 export default exportedMethods;

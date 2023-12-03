@@ -4,8 +4,8 @@ import { dbConnection, closeConnection } from '../config/mongoConnection.js';
 let db = await dbConnection();
 await db.dropDatabase();
 
-const user1 = await userData.createUser("test1@test.com", "May", "Test123@");
-const user2 = await userData.createUser("test2@test.com", "John", "Test123@");
+const user1 = await userData.createUser("SYgMdSPLQoYT2gntlMid9vthRmC3", "test@mail.com", "testname");
+const user2 = await userData.createUser("EgW9x0YPypfBZE2x5H8VuX6U9483", "test1@mail.com", "May");
 
 console.log("--------------------createPost--------------------");
 console.log("Should create and return post 1 & 2 & 3");

@@ -85,7 +85,7 @@ const createPost = async (
         const userCollection = await user();
 
         const updatedUser = await userCollection.findOneAndUpdate(
-            {_id: new ObjectId(user_id)},
+            {_id: user_id},
             {$addToSet: {posts: insertInfo.insertedId.toString()}},
             {returnDocument: 'after'} // to get the updated document
         );
@@ -115,7 +115,7 @@ const removePostById = async (
 
         const userCollection = await user();
         await userCollection.updateOne(
-            {_id: new ObjectId(oldPost.user_id)},
+            {_id: oldPost.user_id},
             {$pull: {posts: post_id}}
         );
         

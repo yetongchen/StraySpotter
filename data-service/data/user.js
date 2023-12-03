@@ -1,44 +1,70 @@
 import { user } from "../config/mongoCollection.js";
-import { ObjectId } from "mongodb";
 import validation from "../validation.js";
 import bcrypt from 'bcrypt';
 
 /**
- * @param {ObjectId} _id - the unique id of user
+ * @param {string} _id - the unique id of user
  * @param {string} email - the email of the user
  * @param {String} name - the name of user, name can be multiple in database
  * @param {String} password - the password
  * @param {String} posts - the post array of the user
  */
 
-const createUser = async (email, name, password) => {
+// const createUser = async (email, name, password) => {
 
+//     email = validation.validateEmail(email);
+//     name = validation.validateName(name);
+//     password = validation.validatePassword(password);
+
+//     const userdb = await user();
+
+//     // Check the email is used or not
+//     let duplicate_email = await userdb.findOne({email: email});
+//     if (duplicate_email) throw 'Error: this email is already register by someone else';
+
+//     // hash the password
+//     let saltRounds = 10
+//     const hashPassword = await bcrypt.hash(password, saltRounds);
+        
+//     // store the info to userdb
+//     const UserData = {
+//         email : email,
+//         name : name,
+//         password : hashPassword,
+//         posts: []
+//     };
+
+//     const insertInfo = await userdb.insertOne(UserData);
+//     if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Can not insert this user.";
+
+//     const userInserted = await getUserById(insertInfo.insertedId.toString());
+//     return userInserted;
+// };
+
+const createUser = async (id, email, name) => {
+    id = validation.validateId(id);
     email = validation.validateEmail(email);
     name = validation.validateName(name);
-    password = validation.validatePassword(password);
 
     const userdb = await user();
 
     // Check the email is used or not
     let duplicate_email = await userdb.findOne({email: email});
-    if (duplicate_email) throw 'Error: this email is already register by someone else';
-
-    // hash the password
-    let saltRounds = 10
-    const hashPassword = await bcrypt.hash(password, saltRounds);
+    if (duplicate_email) throw 'this email is already register by someone else';
         
     // store the info to userdb
     const UserData = {
+        _id: id,
         email : email,
         name : name,
-        password : hashPassword,
         posts: []
     };
-
+    
     const insertInfo = await userdb.insertOne(UserData);
+    console.log("insert", insertInfo);
     if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Can not insert this user.";
-
-    const userInserted = await getUserById(insertInfo.insertedId.toString());
+    const userInserted = await getUserById(insertInfo.insertedId);
+    console.log(userInserted);
     return userInserted;
 };
 
@@ -78,10 +104,9 @@ const updateUser = async (email, name, password) => {
 
 
 const getUserById = async (user_id) => {
-
+    user_id = validation.validateId(user_id);
     const userdb = await user();
-    const Info = await userdb.findOne({_id: new ObjectId(user_id)})
-    Info._id = Info._id.toString();
+    const Info = await userdb.findOne({_id: user_id});
     return Info;
 };
 

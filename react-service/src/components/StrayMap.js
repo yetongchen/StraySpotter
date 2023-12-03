@@ -73,20 +73,61 @@ const StrayMap = () => {
     };
     
     useEffect(() => {
-      const SpeciesFilterElement = L.Control.extend({
-        onAdd: function() {
-          let container = L.DomUtil.create('div');
-          ReactDOM.render(<SpeciesFilter onChange={onFilterChange} />, container);
-          return container;
+      const controlDiv = L.DomUtil.create('div', 'species-filter-control');
+      controlDiv.innerHTML = `
+        <form>
+        <label className='filter-container'>
+          <input
+            type="radio"
+            value="all"
+            name="radio"
+          />
+          <span class="checkmark"></span>
+          All
+        </label>
+        <label className='filter-container'>
+          <input
+            type="radio"
+            value="cat"
+            name="radio"
+          />
+          <span class="checkmark"></span>
+          Cats
+        </label>
+        <label className='filter-container'>
+          <input
+            type="radio"
+            value="dog"
+            name="radio"
+          />
+          <span class="checkmark"></span>
+          Dogs
+        </label>
+        <label className='filter-container'>
+          <input
+            type="radio"
+            value="others"
+            name="radio"
+          />
+          <span class="checkmark"></span>
+          Others
+        </label>
+      </form>
+      `;
+      controlDiv.onchange = (e) => {
+        if (e.target.type === 'radio') {
+          onFilterChange(e.target.value);
+        }
+      };
+
+      const customControl = L.Control.extend({
+        onAdd: function(map) {
+          return controlDiv;
         }
       });
   
-      const speciesFilterElement = new SpeciesFilterElement({ position: 'bottomright' });
-      speciesFilterElement.addTo(map);
-  
-      return () => {
-        speciesFilterElement.remove();
-      };
+      const control = new customControl({ position: 'bottomright' }).addTo(map);
+      return () => map.removeControl(control);
     }, [map, onFilterChange]);
   
     return null;
@@ -95,7 +136,7 @@ const StrayMap = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/map');
+        const response = await axios.get('http://localhost:4000/post');
         return response.data;
       } catch (error) {
         console.error('Error fetching stray posts:', error);

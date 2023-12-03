@@ -2,7 +2,7 @@ import {locationData} from '../data/index.js';
 import { dbConnection, closeConnection } from '../config/mongoConnection.js';
 
 let db = await dbConnection();
-//await db.dropDatabase();
+await db.dropDatabase();
 
 console.log("--------------------createLocation--------------------");
 console.log("Should create and return location 1 & 2");

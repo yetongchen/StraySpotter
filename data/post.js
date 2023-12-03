@@ -1,8 +1,8 @@
-import {post} from "../config/mongoCollection";
-import {user} from "../config/mongoCollection";
-import {location} from "../config/mongoCollection";
+import {post} from "../config/mongoCollection.js";
+import {user} from "../config/mongoCollection.js";
+import locationData from "./location.js";
 import {ObjectId} from "mongodb";
-import vaidation from "../validation";
+import validation from "../validation.js";
 
 // Import AWS SDK
 import AWS from 'aws-sdk';
@@ -16,8 +16,11 @@ const bucketName = 'cs545project';
 const s3 = new AWS.S3();
 
 // Configure the AWS region and credentials
-AWS.config.update({ region: 'us-east-1' }); 
-AWS.config.update({ accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_ID }); 
+AWS.config.update({
+    region: 'us-east-1',
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_ID
+  });
 
 /**
  * @param {ObjectId} _id - the unique id of the post
@@ -35,57 +38,62 @@ AWS.config.update({ accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_
 const createPost = async (
     user_id,
     species,
+    gender,
     health_condition,
     description,
     photo_url,
-    location_id
+    address
 ) => {
     try {
         // validaiton
-        user_id = vaidation.validateId(user_id);
-        species = vaidation.validateSpecies(species);
-        health_condition = vaidation.validateHealthCondition(health_condition);
-        description = vaidation.validateDescription(description);
-        location_id = vaidation.validateLocation(location_id);
+        user_id = validation.validateId(user_id);
+        species = validation.validateSpecies(species);
+        gender = validation.validateGender(gender);
+        health_condition = validation.validateHealthCondition(health_condition);
+        description = validation.validateDescription(description);
+        
 
         // generate datetime
-        const datetime = vaidation.generateCurrentDate();
+        const datetime = validation.generateCurrentDate();
 
-        photo_url = createURL(photo_url)
+        photo_url = await createURL(photo_url)
 
         // save post to database
         const singlePost = {
             user_id: user_id,
             species: species,
+            gender: gender,
             health_condition: health_condition,
             description: description,
             found_datatime: datetime,
             photo_url: photo_url,
-            location_id: location_id
+            location_id: null
         };
         const postCollection = await post();
         const insertInfo = await postCollection.insertOne(singlePost);
         if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Could not add user.";
 
+        const location = await locationData.createLocation(address, insertInfo.insertedId.toString());
+        const updatedInfo = await postCollection.updateOne(
+            { _id: insertInfo.insertedId },
+            { $set: { location_id: location._id } }
+          );
+          if (!updatedInfo) throw "location_id update failed";
 
         // save post_id to user collection
         const userCollection = await user();
 
         const updatedUser = await userCollection.findOneAndUpdate(
             {_id: new ObjectId(user_id)},
-            {$addToSet: {posts: insertInfo.insertedId}},
+            {$addToSet: {posts: insertInfo.insertedId.toString()}},
             {returnDocument: 'after'} // to get the updated document
         );
-
-        if (!updatedUser.value) {
+        if (!updatedUser) {
             throw "Could not find or update user with post information.";
         }
 
         // return created post object
-        const createdPost = {
-            _id: insertInfo.insertedId,
-            ...singlePost,
-        };
+        const createdPost = getPostByPostId(insertInfo.insertedId.toString());
         return createdPost;
     } catch (error) {
         throw error;
@@ -97,22 +105,27 @@ const removePostById = async (
     post_id
 ) => {
     try {
-        post_id = vaidation.validateId(post_id);
+        post_id = validation.validateId(post_id);
 
-        const postCollection = await post();
-        const deletedPost = await postCollection.findOneAndDelete({_id: new ObjectId(post_id)});
-
-        if (!deletedPost.value) {
-            throw "Could not find or delete the post.";
-        }
+        // remove location
+        const oldPost = await getPostByPostId(post_id);
+        const removeOldLocation = await locationData.removeLocationByPostId(post_id, oldPost.location_id);
+        if (! removeOldLocation)   throw "Could not remove old location while updating the post.";
 
         const userCollection = await user();
         await userCollection.updateOne(
-            {_id: new ObjectId(deletedPost.value.user_id)},
-            {$pull: {posts: new ObjectId(post_id)}}
+            {_id: new ObjectId(oldPost.user_id)},
+            {$pull: {posts: post_id}}
         );
+        
+        const postCollection = await post();
+        const deletedPost = await postCollection.findOneAndDelete({_id: new ObjectId(post_id)});
 
-        return deletedPost.value;
+        if (!deletedPost) {
+            throw "Could not find or delete the post.";
+        }
+
+        return deletedPost;
     } catch (error) {
         throw error;
     }
@@ -120,28 +133,34 @@ const removePostById = async (
 
 const updatePost = async (
     post_id,
-    user_id,
     species,
+    gender,
     health_condition,
     description,
     photo_url,
-    location_id
+    address
 ) => {
     try {
         // validation
-        post_id = vaidation.validateId(post_id);
-        user_id = vaidation.validateId(user_id);
-        species = vaidation.validateSpecies(species);
-        health_condition = vaidation.validateHealthCondition(health_condition);
-        description = vaidation.validateDescription(description);
-        location_id = vaidation.validateLocation(location_id);
+        post_id = validation.validateId(post_id);
+        species = validation.validateSpecies(species);
+        gender = validation.validateGender(gender);
+        health_condition = validation.validateHealthCondition(health_condition);
+        description = validation.validateDescription(description);
+
+        // delete old location and generate new location object
+        const oldPost = await getPostByPostId(post_id);
+        const removeOldLocation = await locationData.removeLocationByPostId(post_id, oldPost.location_id);
+        if (! removeOldLocation)   throw "Could not remove old location while updating the post.";
+        const location = await locationData.createLocation(address, post_id);
+        const location_id = location._id;
 
         // generate datetime
-        const datetime = vaidation.generateCurrentDate();
+        //const datetime = validation.generateCurrentDate();
 
         // update new photo
         if (photo_url !== null) {
-            photo_url = createURL(photo_url);
+            photo_url = await createURL(photo_url);
         } else {
             
             // or use original photo
@@ -155,11 +174,12 @@ const updatePost = async (
             {_id: new ObjectId(post_id)},
             {
                 $set: {
-                    user_id: user_id,
+                    user_id: oldPost.user_id,
                     species: species,
+                    gender: gender,
                     health_condition: health_condition,
                     description: description,
-                    found_datatime: datetime,
+                    found_datatime: oldPost.found_datatime,
                     photo_url: photo_url,
                     location_id: location_id,
                 },
@@ -167,11 +187,11 @@ const updatePost = async (
             {returnDocument: 'after'}
         );
 
-        if (!updatedPost.value) {
+        if (!updatedPost) {
             throw "Could not find or update the post.";
         }
 
-        return updatedPost.value;
+        return updatedPost;
     } catch (error) {
         throw error;
     }
@@ -182,14 +202,14 @@ const getPostByPostId = async (
     post_id
 ) => {
     try {
-        post_id = vaidation.validateId(post_id);
+        post_id = validation.validateId(post_id);
 
         const postCollection = await post();
         const foundPost = await postCollection.findOne({ _id: new ObjectId(post_id) });
 
-        if (!foundPost) {
-            throw "Post not found.";
-        }
+        if (!foundPost) throw "Post not found.";
+
+        foundPost._id = foundPost._id.toString();
 
         return foundPost;
     } catch (error) {
@@ -201,7 +221,7 @@ const getPostByUserId = async (
     user_id
 ) => {
     try {
-        user_id = vaidation.validateId(user_id);
+        user_id = validation.validateId(user_id);
 
         const postCollection = await post();
         const posts = await postCollection.find({ user_id: user_id }).toArray();
@@ -228,7 +248,7 @@ const getLocationByPostId = async (
 ) => {
     try {
         // validation
-        post_id = vaidation.validateId(post_id);
+        post_id = validation.validateId(post_id);
 
         const postCollection = await post();
         const foundPost = await postCollection.findOne({ _id: new ObjectId(post_id) });
@@ -254,36 +274,35 @@ const getLocationByPostId = async (
 
 const createURL = async (filePath) => {
 
-   // Read the file from the file system
-   const fileContent = fs.readFileSync(filePath);
+    // Read the file from the file system
+    const fileContent = fs.readFileSync(filePath);
 
-   // Generate a random string for the file name
-   const randomString = Math.random().toString(36).substring(2, 15) 
-                      + Math.random().toString(36).substring(2, 15);
-   // Extract filename
-   const originalFileName = filePath.split('/').pop();
+    // Generate a random string for the file name
+    const randomString = Math.random().toString(36).substring(2, 15) 
+                        + Math.random().toString(36).substring(2, 15);
+    // Extract filename
+    const originalFileName = filePath.split('/').pop();
 
-   const currentFileName = randomString + '.' + originalFileName.slice(((originalFileName.lastIndexOf(".") - 1) >>> 0) + 2);
+    const currentFileName = randomString + '.' + originalFileName.slice(((originalFileName.lastIndexOf(".") - 1) >>> 0) + 2);
 
-   // Setting up S3 upload parameters
-   const params = {
-       Bucket: bucketName,
-       Key: currentFileName, // File name you want to save as in S3
-       Body: fileContent
-   };
+    // Setting up S3 upload parameters
+    const params = {
+        Bucket: bucketName,
+        Key: currentFileName, // File name you want to save as in S3
+        Body: fileContent
+    };
 
-   // Uploading files to the bucket
-   s3.upload(params, function(err, data) {
-       if (err) {
-           console.log("Error", err);
-         } else {
-           console.log("Successfully uploaded file to S3");
-           const url = `https://${bucketName}.s3.amazonaws.com/${currentFileName}`;
-           console.log("File URL:", url);
-         }
-   });
-
-    
+    // Uploading files to the bucket
+    s3.upload(params, function(err, data) {
+        if (err) {
+            console.log("Error", err);
+        } else {
+            console.log("Successfully uploaded file to S3");
+            const url = `https://${bucketName}.s3.amazonaws.com/${currentFileName}`;
+            console.log("File URL:", url);
+            return url;
+        }
+    });
 };
 
 export default {
@@ -292,8 +311,6 @@ export default {
     updatePost,
     getPostByPostId,
     getPostByUserId,
-    // getPostByEventId,
     getAllPosts,
-    getLocationByPostId,
-    createURL,
+    getLocationByPostId
 };

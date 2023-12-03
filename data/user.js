@@ -20,14 +20,12 @@ const createUser = async (email, name, password) => {
     const userdb = await user();
 
     // Check the email is used or not
-    duplicate_email = userdb.find({name: name});
-
+    let duplicate_email = await userdb.findOne({email: email});
     if (duplicate_email) throw 'Error: this email is already register by someone else';
 
     // hash the password
-
-    saltRounds = 10
-    const hashPassword = bcrypt.hash(password, saltRounds)
+    let saltRounds = 10
+    const hashPassword = await bcrypt.hash(password, saltRounds);
         
     // store the info to userdb
     const UserData = {
@@ -40,7 +38,8 @@ const createUser = async (email, name, password) => {
     const insertInfo = await userdb.insertOne(UserData);
     if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Can not insert this user.";
 
-    return true
+    const userInserted = await getUserById(insertInfo.insertedId.toString());
+    return userInserted;
 };
 
 
@@ -81,8 +80,9 @@ const updateUser = async (email, name, password) => {
 const getUserById = async (user_id) => {
 
     const userdb = await user();
-    const Info = await userdb.findOne({_id: ObjectId(user_id)})
-    return Info
+    const Info = await userdb.findOne({_id: new ObjectId(user_id)})
+    Info._id = Info._id.toString();
+    return Info;
 };
 
 const login = async (email, password) => {

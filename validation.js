@@ -9,24 +9,56 @@ const exportedMethods = {
             throw 'Error:id cannot be an empty string or just spaces';
         return id;
     },
-    validateName(name, valName) {
+    validateName(name) {
         if (!name) {
-            throw `Error: ${valName} not supplied`;
+            throw `Error: name not supplied`;
         }
         if (typeof name !== "string" || name.trim().length === 0) {
-            throw `Error: ${valName} should be a valid string (no empty spaces)`;
+            throw `Error: name should be a valid string (no empty spaces)`;
         }
 
         name = name.trim();
         const nameRegex = /^[a-zA-Z]+$/;
         if (!nameRegex.test(name)) {
-            throw `Error: ${valName} must only contain character a-z and should not contain numbers`;
+            throw `Error: name must only contain character a-z and should not contain numbers`;
         }
         if (name.length < 2 || name.length > 25) {
-            throw `Error: ${valName} length must be at least 2 characters long with a max of 25 characters`
+            throw `Error: name length must be at least 2 characters long with a max of 25 characters`
         }
         return name;
     },
+    validateEmail(email) {
+        if (!email) {
+            throw `Error: email not supplied`;
+        }
+        if (typeof email !== "string" || email.trim().length === 0) {
+            throw `Error: email should be a valid string (no empty spaces)`;
+        }
+    
+        email = email.trim();
+        // Simple regex for email validation
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if (!emailRegex.test(email)) {
+            throw `Error: email is not a valid email address`;
+        }
+        return email;
+    },
+    validatePassword(password) {
+        if (!password) {
+            throw `Error: password not supplied`;
+        }
+        if (typeof password !== "string" || password.trim().length === 0) {
+            throw `Error: password should be a valid string (no empty spaces)`;
+        }
+    
+        password = password.trim();
+        // Regex for password: Minimum eight characters, at least one uppercase letter, one lowercase letter, one number, and one special character
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            throw `Error: password does not meet the password criteria`;
+        }
+        return password;
+    },    
     validateSpecies(species) {
         if (typeof species !== "string" || species.trim().length === 0) {
             throw `Error: Species should be a valid string (no empty spaces)`;
@@ -38,7 +70,7 @@ const exportedMethods = {
         return species;
     },
     validateHealthCondition(health){
-        if (typeof health !== "string" || species.trim().length === 0)
+        if (typeof health !== "string" || health.trim().length === 0)
             throw "Error: health must be a non-empty string";
         health = health.trim();
         const vaildAnimalHealthCondition = ["Good", "Normal", "Bad"];

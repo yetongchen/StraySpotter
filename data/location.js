@@ -113,7 +113,7 @@ const createLocation = async (address, post_id) => {
 };
 
 const getLocationById = async (location_id) => {
-    location_id = validation.checkStringObjectID(location_id);
+    location_id = validation.validateId(location_id);
     const locationCollection = await location();
     const locationInfo = await locationCollection.findOne({_id: new ObjectId(location_id)});
     if (!locationInfo) throw "Can not find location";
@@ -137,12 +137,16 @@ const removeLocationByPostId = async (post_id, location_id) => {
       locationInfo.city,
       locationInfo.city_posts_num - 1
     );
-    const removeInfo = await locationCollection.updateOne(
-      { _id: new ObjectId(location_id) },
-      { $set: { posts: postList } }
-    );
-    if (!removeInfo) {
-      throw "Could not remove this post's location";
+    
+    if (postList.length === 0) {
+      const removeInfo = await locationCollection.findOneAndDelete({_id: new ObjectId(location_id)});
+      if (!removeInfo) throw "Could not remove this post's location object.";
+    } else {
+      const removeInfo = await locationCollection.updateOne(
+        { _id: new ObjectId(location_id) },
+        { $set: { posts: postList } }
+      );
+      if (!removeInfo) throw "Could not remove post_id from location object.";
     }
     return true;
   };

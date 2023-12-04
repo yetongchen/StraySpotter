@@ -8,6 +8,8 @@ import "../styles/UserCenter.css";
 const UserCenter = () => {
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(true);
   const auth = getAuth(); // 获取 Firebase Auth 的实例
   const [userInfo, setUserInfo] = useState(null); // 新状态来存储从你的后端获取的用户信息
 
@@ -25,9 +27,13 @@ const UserCenter = () => {
             `http://localhost:4000/user/${user.uid}`
           );
           setUserInfo(response.data);
+          setLoading(false);
+          setNotFound(false);
           console.log(response.data);
         } catch (error) {
           console.error("Error fetching user info:", error);
+          setNotFound(true);
+          setLoading(false);
         }
       } else {
         // if the user is not logged in，clear userInfo
@@ -41,37 +47,51 @@ const UserCenter = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/post/user/${userInfo._id}`);
+        if (userInfo) {
+          const response = await axios.get(`http://localhost:4000/post/user/${userInfo._id}`);
         setPosts(response.data);
         console.log(response.data);
+        }
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
     };
 
     fetchPosts();
-  }, [userInfo]); // useEffect will run when `id` changes
+  }, [userInfo]);
 
-  
-
-  return (
+  if (loading) {
+    return (
+        <div>
+            <h2 style={{textAlign: 'center'}}>Loading....</h2>
+        </div>
+    );
+  } else if (notFound) {
+    return (
     <div>
-      <h2>My Posts</h2>
-      <div><NavLink to="/new">Upload a new post</NavLink></div>
-      <div>
-        {posts.map(post => (
-            <div key={post._id} className='user-post'>
-                <img src={post.photo_url ? post.photo_url : noImage} alt={`Found ${post.species}`} className="post-image" style={{ maxWidth: '300px' }}/>
-                <h2>Details about the Found {post.species === "Others" ? "Animal" : post.species}</h2>
-                <p><strong>ID:</strong> <NavLink to={`/animal/${post._id}`}>{post._id}</NavLink><br /></p>
-                <p><strong>Species:</strong> {post.species ? post.species : "Unknown"}</p>
-                <p><strong>Gender:</strong> {post.gender ? post.gender : "Unknown"}</p>
-                <p><strong>Health Condition:</strong> {post.health_condition ? post.health_condition : "Unknown"}</p>
-            </div>
-        ))}
-      </div>
+        <h2 style={{textAlign: 'center'}}>Error 404: There was a problem fetching User Center</h2>
     </div>
-  );
+    );
+  } else {
+    return (
+      <div>
+        <h2>My Posts</h2>
+        <div><NavLink to="/new">Upload a new post</NavLink></div>
+        <div>
+          {posts.map(post => (
+              <div key={post._id} className='user-post'>
+                  <img src={post.photo_url ? post.photo_url : noImage} alt={`Found ${post.species}`} className="post-image" style={{ maxWidth: '300px' }}/>
+                  <h2>Details about the Found {post.species === "Others" ? "Animal" : post.species}</h2>
+                  <p><strong>ID:</strong> <NavLink to={`/animal/${post._id}`}>{post._id}</NavLink><br /></p>
+                  <p><strong>Species:</strong> {post.species ? post.species : "Unknown"}</p>
+                  <p><strong>Gender:</strong> {post.gender ? post.gender : "Unknown"}</p>
+                  <p><strong>Health Condition:</strong> {post.health_condition ? post.health_condition : "Unknown"}</p>
+              </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 };
 
 export default UserCenter;

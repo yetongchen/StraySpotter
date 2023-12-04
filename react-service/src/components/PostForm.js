@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged} from "firebase/auth";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const PostForm = () => {
     const [user, setUser] = useState(null);
     const auth = getAuth(); // 获取 Firebase Auth 的实例
+    const navigate = useNavigate();
     const [userInfo, setUserInfo] = useState(null); // 新状态来存储从你的后端获取的用户信息
     const [formData, setFormData] = useState({
         user_id: '',
@@ -94,6 +96,7 @@ const PostForm = () => {
       );
       // Handle response
       console.log('Success:', response.data);
+      navigate(`/animal/${response.data._id}`);
     } catch (error) {
       console.error('Error uploading post:', error);
     }

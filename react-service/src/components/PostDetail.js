@@ -35,13 +35,13 @@ const PostDetail = ({ props }) => {
     if (loading) {
         return (
             <div>
-                <h2 style={{"text-align": "center"}}>Loading....</h2>
+                <h2 style={{textAlign: 'center'}}>Loading....</h2>
             </div>
         );
     } else if (notFound) {
         return (
         <div>
-            <h2 style={{"text-align": "center"}}>Error 404: There was a problem fetching post details</h2>
+            <h2 style={{textAlign: 'center'}}>Error 404: There was a problem fetching post details</h2>
         </div>
         );
     } else {

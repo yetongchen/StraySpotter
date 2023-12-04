@@ -73,19 +73,19 @@ const PostForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataToSend = new FormData();
-    formDataToSend.append('user_id', formData.user_id);
+    formDataToSend.append('user_id', user.uid);
     formDataToSend.append('species', formData.species);
     formDataToSend.append('gender', formData.gender);
     formDataToSend.append('health_condition', formData.health_condition);
     formDataToSend.append('description', formData.description);
     formDataToSend.append('address', formData.address);
+
     if (formData.photo_url) {
         formDataToSend.append('photo_url', formData.photo_url);
       }
-    console.log("front", formDataToSend);
     try {    
       const response = await axios.post('http://localhost:4000/post/new',
-        formDataToSend, 
+      formDataToSend, 
         {
             headers: {
             'Content-Type': 'multipart/form-data'

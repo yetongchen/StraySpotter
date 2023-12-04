@@ -47,16 +47,19 @@ const createPost = async (
         species = validation.validateSpecies(species);
         gender = validation.validateGender(gender);
         health_condition = validation.validateHealthCondition(health_condition);
+
         description = validation.validateDescription(description);
         
-
         // generate datetime
         const datetime = validation.generateCurrentDate();
 
-        if (! photo_url) {
+
+        if (!photo_url) {
             photo_url = null;
+        } else if(typeof photo_url === 'string'){
+            photo_url = await createURLByPath(photo_url);
         } else {
-            photo_url = await createURL(photo_url);
+            photo_url = await createURLByFile(photo_url);
         }
 
         // save post to database
@@ -70,9 +73,11 @@ const createPost = async (
             photo_url: photo_url,
             location_id: null
         };
+
         const postCollection = await post();
         const insertInfo = await postCollection.insertOne(singlePost);
         if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Could not add user.";
+
 
         const location = await locationData.createLocation(address, insertInfo.insertedId.toString());
         const updatedInfo = await postCollection.updateOne(
@@ -163,13 +168,19 @@ const updatePost = async (
         
         // update new photo
         if (photo_url !== null) {
-            photo_url = await createURL(photo_url);
-        } else {
-            
+
+            if (isinstance(variable, str)) {
+                photo_url = await createURLByPath(photo_url);
+            } else {
+                photo_url = await createURLByFile(photo_url);
+            }
+        } else {        
             // or use original photo
             const temp = await postCollection.findOne({_id: new ObjectId(post_id)});
             photo_url = temp.photo_url;
         }
+
+       
 
         const updatedPost = await postCollection.findOneAndUpdate(
             {_id: new ObjectId(post_id)},
@@ -281,7 +292,7 @@ const getLocationByPostId = async (
     }
 };
 
-const createURL = async (filePath) => {
+const createURLByPath = async (filePath) => {
 
     // Create an S3 instance
     const s3 = new AWS.S3();
@@ -319,6 +330,44 @@ const createURL = async (filePath) => {
     });
 };
 
+const createURLByFile = async (file) => {
+
+    // Create an S3 instance
+    const s3 = new AWS.S3();
+
+    // Generate a random string for the file name
+    const randomString = Math.random().toString(36).substring(2, 15) 
+                        + Math.random().toString(36).substring(2, 15);
+
+    const filenameParts = file.originalname.split('.');
+    const extension = filenameParts[filenameParts.length - 1];
+
+    const currentFileName = randomString + '.' + extension;
+
+    const fileContent = file.buffer;
+
+    // Setting up S3 upload parameters
+    const params = {
+        Bucket: bucketName,
+        Key: currentFileName, // File name you want to save as in S3
+        Body: fileContent
+    };
+
+    return new Promise((resolve, reject) => {
+        s3.upload(params, function(err, data) {
+            if (err) {
+                console.log("Error", err);
+                reject(err);
+            } else {
+                console.log("Successfully uploaded file to S3");
+                const url = `https://${bucketName}.s3.amazonaws.com/${currentFileName}`;
+                console.log("File URL:", url);
+                resolve(url);
+            }
+        });
+    });
+};
+
 export default {
     createPost,
     removePostById,
@@ -327,5 +376,6 @@ export default {
     getPostByUserId,
     getAllPosts,
     getLocationByPostId,
-    createURL
+    createURLByPath,
+    createURLByFile
 };

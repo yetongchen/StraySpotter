@@ -96,6 +96,7 @@ const PostForm = () => {
       );
       // Handle response
       console.log('Success:', response.data);
+      alert("Successfully uploaded!");
       navigate(`/animal/${response.data._id}`);
     } catch (error) {
       console.error('Error uploading post:', error);

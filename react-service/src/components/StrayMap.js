@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
-import { NavLink } from 'react-router-dom';
+// import ReactDOM from 'react-dom';
+// import { NavLink } from 'react-router-dom';
 import axios from 'axios';
 import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -97,7 +97,7 @@ const StrayMap = () => {
       if (searchLocation) {
         map.panTo(new L.LatLng(searchLocation.latitude, searchLocation.longitude));
       }
-    }, [searchLocation, map]);
+    }, [map]);
   
     const handleSearch = async () => { 
       try {
@@ -135,29 +135,123 @@ const StrayMap = () => {
       const dogs = L.featureGroup().addTo(map);
       const others = L.featureGroup().addTo(map);
 
+      const grouped = {};
+
       posts.forEach(post => {
-        const marker = L.marker([post.location.coordinate.latitude, post.location.coordinate.longitude], { icon: customIcon, key: post._id});
-        marker.bindPopup(`
-          <div>
+        // Create a unique key for each location
+        const locationKey = `${post.location.coordinate.latitude},${post.location.coordinate.longitude}`;
+
+        // Initialize the array for this location if it doesn't exist
+        if (!grouped[locationKey]) {
+          grouped[locationKey] = [];
+        }
+
+        // Add the post to the array for this location
+        grouped[locationKey].push(post);
+      });
+
+      function createPopupContent(postList, currentIndex, locationKey) {
+        let posts = [];
+        //console.log("postList", postList);
+        postList.forEach(post => {
+          if (visibleSpecies[post.species.toLowerCase()]){
+            posts.push(post);
+          }
+        });
+        //console.log("current posts", posts);
+        if (posts.length === 0) return null;
+        let post = posts[currentIndex];
+        let popupContent = `
+          <div style="max-height: 300px; overflow: auto;"}>
             ID: <a href="/animal/${post._id}">${post._id}</a><br />
             Species: ${post.species}<br />
             Gender: ${post.gender}<br />
             Health: ${post.health_condition}<br />
-            Found Datetime: ${post.found_datetime}<br />
-            <img src="${post.photo_url}" alt="Stray" style="max-width: 150px;" />
+            Found Datetime:<br>${post.found_datetime}<br />
+            <img src="${post.photo_url}" alt="Stray" style="max-width: 180px;" />
           </div>
-        `);
+          <div class="popup-navigation">
+            ${currentIndex > 0 ? `<button onclick="changePopupPost('${locationKey}', ${currentIndex - 1})">&lt;</button>` : ''}
+            ${posts.length > 1 ? currentIndex + 1 : ''}
+            ${currentIndex < posts.length - 1 ? `<button onclick="changePopupPost('${locationKey}', ${currentIndex + 1})">&gt;</button>` : ''}
+          </div>
+          
+        `;
+        return popupContent;
+      };
 
-        if (visibleSpecies[post.species.toLowerCase()]) {
-          if (post.species.toLowerCase() === "cat") {
-            cats.addLayer(marker);
-          } else if (post.species.toLowerCase() === "dog") {
-            dogs.addLayer(marker);
-          } else {
-            others.addLayer(marker);
+      let postsOfSpeciesAtLocation = {};
+
+      Object.entries(grouped).forEach(([locationKey, postsAtLocation]) => {
+        const [latitude, longitude] = locationKey.split(",");
+        const marker = L.marker([parseFloat(latitude), parseFloat(longitude)], { icon: customIcon, key: locationKey });
+        
+        if (!postsOfSpeciesAtLocation[locationKey]) {
+          postsOfSpeciesAtLocation[locationKey] = {
+            cat : [],
+            dog: [],
+            others: []
+          };
+        }
+        for (let i = 0; i < postsAtLocation.length; i++){
+          let post = postsAtLocation[i];
+          if (visibleSpecies[post.species.toLowerCase()]) {
+            if (post.species.toLowerCase() === "cat") {
+              cats.addLayer(marker);
+              postsOfSpeciesAtLocation[locationKey]["cat"].push(post);
+            } else if (post.species.toLowerCase() === "dog") {
+              dogs.addLayer(marker);
+              postsOfSpeciesAtLocation[locationKey]["dog"].push(post);
+            } else {
+              others.addLayer(marker);
+              postsOfSpeciesAtLocation[locationKey]["others"].push(post);
+            }
           }
         }
+        marker.bindPopup(createPopupContent(grouped[locationKey], 0, locationKey));
       });
+
+      // console.log("postsOfSpeciesAtLocation", postsOfSpeciesAtLocation);
+
+      window.changePopupPost = (locationKey, newIndex) => {
+        let posts = [];
+        if (visibleSpecies.cat) posts = posts.concat(postsOfSpeciesAtLocation[locationKey]["cat"]);
+        if (visibleSpecies.dog) posts = posts.concat(postsOfSpeciesAtLocation[locationKey]["dog"]);
+        if (visibleSpecies.others) posts = posts.concat(postsOfSpeciesAtLocation[locationKey]["others"]);
+        //console.log("change popup post", posts);
+        if (posts && posts[newIndex]) {
+          const newContent = createPopupContent(posts, newIndex, locationKey);
+          const [latitude, longitude] = locationKey.split(",");
+          L.popup()
+            .setLatLng([parseFloat(latitude), parseFloat(longitude)])
+            .setContent(newContent)
+            .openOn(map);
+        }
+      };  
+
+      // posts.forEach(post => {
+      //   const marker = L.marker([post.location.coordinate.latitude, post.location.coordinate.longitude], { icon: customIcon, key: post._id});
+      //   marker.bindPopup(`
+      //     <div>
+      //       ID: <a href="/animal/${post._id}">${post._id}</a><br />
+      //       Species: ${post.species}<br />
+      //       Gender: ${post.gender}<br />
+      //       Health: ${post.health_condition}<br />
+      //       Found Datetime: ${post.found_datetime}<br />
+      //       <img src="${post.photo_url}" alt="Stray" style="max-width: 150px;" />
+      //     </div>
+      //   `);
+
+      //   if (visibleSpecies[post.species.toLowerCase()]) {
+      //     if (post.species.toLowerCase() === "cat") {
+      //       cats.addLayer(marker);
+      //     } else if (post.species.toLowerCase() === "dog") {
+      //       dogs.addLayer(marker);
+      //     } else {
+      //       others.addLayer(marker);
+      //     }
+      //   }
+      // });
       map.addLayer(MarkerClusterGroup);
 
       return () => {
@@ -167,7 +261,7 @@ const StrayMap = () => {
         map.removeLayer(MarkerClusterGroup);
       };
       
-    }, [map, posts, visibleSpecies]);
+    }, [map, MarkerClusterGroup]);
     return null;
   };
   

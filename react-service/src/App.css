@@ -70,3 +70,21 @@ nav ul li a:hover {
   border-radius: 5px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
+
+.popup-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.popup-navigation button {
+  padding: 5px 10px;
+  margin: 0 5px;
+  background-color: transparent;
+  color: #333;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}

@@ -1,18 +1,12 @@
 import { ObjectId } from "mongodb";
 import nodeGeocoder from 'node-geocoder';
-import { location } from "../config/mongoCollection.js";
+import { location, post } from "../config/mongoCollection.js";
 import validation from "../validation.js";
 
 const convertLocation = async (address) => {
   // Validate input
-  if (!address) throw "Please provide an address";
-  if (typeof address !== "string") throw "Address should be a string";
-  address = address.trim();
-  if (address.length === 0) throw "Address should not contain only spaces";
-
-  const reg = /^[a-zA-Z0-9\s,#*]*$/;
-  if (!reg.test(address)) {
-    throw "This is an invalid address";
+  if (!address || typeof address !== "string" || address.trim().length === 0) {
+    throw "Please provide a valid address";
   }
 
   const options = {
@@ -25,14 +19,15 @@ const convertLocation = async (address) => {
     const result = await geoCoder.geocode(address);
 
     // Validate geocode results
-    if (!result || result.length < 1 ||!reg.test(result[0].state) || !reg.test(result[0].city)) {
-      throw "This is an invalid address";
+    if (!result || result.length < 1) {
+      throw "No results found for the provided address";
     }
     return result[0];
   } catch (error) {
     throw "Geocoding failed: " + error.message;
   }
 };
+
 
 const updateCityNum = async (state, city, num) => {
     const locationCollection = await location();
@@ -72,7 +67,7 @@ const createLocation = async (address, post_id) => {
         };
         const insertInfo = await locationCollection.insertOne(locationData);
         if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Can not insert location object.";
-        const locationInserted = getLocationById(insertInfo.insertedId.toString());
+        const locationInserted = await getLocationById(insertInfo.insertedId.toString());
         return locationInserted;
     }
 
@@ -89,7 +84,7 @@ const createLocation = async (address, post_id) => {
             if (!updateInfo.acknowledged) throw "Can not update location object.";
             await updateCityNum(geoInfo.state.toString(), geoInfo.city.toString(), num);
             
-            const locationUpdated = getLocationById(updateInfo.updatedId.toString());
+            const locationUpdated = await getLocationById(updateInfo.updatedId.toString());
             return locationUpdated;
         }
     }
@@ -108,7 +103,7 @@ const createLocation = async (address, post_id) => {
     const insertInfo = await locationCollection.insertOne(locationData);
     if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Can not insert location object.";
 
-    const locationInserted = getLocationById(insertInfo.insertedId.toString());
+    const locationInserted = await getLocationById(insertInfo.insertedId.toString());
     return locationInserted;
 };
 
@@ -119,7 +114,38 @@ const getLocationById = async (location_id) => {
     if (!locationInfo) throw "Can not find location";
     locationInfo._id = locationInfo._id.toString();
     return locationInfo;
-};    
+}; 
+
+const getPostsByAddress = async (address) => {
+  let geoInfo = await convertLocation(address);
+  let coordinate = {
+    latitude: geoInfo.latitude.toString(), 
+    longitude: geoInfo.longitude.toString()
+  };
+
+  const locationCollection = await location();
+  let locationList = [];
+  if (geoInfo.city && geoInfo.state) {
+    locationList = await locationCollection.find({state: geoInfo.state.toString(), city: geoInfo.city.toString()}).toArray();
+  } else if (geoInfo.state && !geoInfo.city){
+    locationList = await locationCollection.find({state: geoInfo.state.toString()}).toArray();
+  }
+  const postCollection = await post();
+  let postList = [];
+  for (let i = 0; i < locationList.length; i++){
+    let posts = await postCollection.find({location_id: locationList[i]._id.toString()}).toArray();
+    postList = postList.concat(posts);
+  }
+  for (let i = 0; i < postList.length; i++){
+    let location = await getLocationById(postList[i].location_id);
+    postList[i].location = location;
+  }
+  let result = {
+    coordinate: coordinate,
+    postList : postList
+  }
+  return result;
+}; 
 
 const removeLocationByPostId = async (post_id, location_id) => {
     const locationCollection = await location();
@@ -154,5 +180,6 @@ const removeLocationByPostId = async (post_id, location_id) => {
 export default {
     createLocation,
     getLocationById,
+    getPostsByAddress,
     removeLocationByPostId,
 };

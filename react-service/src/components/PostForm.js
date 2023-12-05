@@ -99,6 +99,7 @@ const PostForm = () => {
       navigate(`/animal/${response.data._id}`);
     } catch (error) {
       console.error('Error uploading post:', error);
+      alert('Error uploading post:', error.message);
     }
   };
   

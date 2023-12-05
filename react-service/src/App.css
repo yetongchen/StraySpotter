@@ -53,53 +53,20 @@ nav ul li a:hover {
   background-color: #111;
 }
 
-.species-filter-control {
-  display: block;
-  background: white;
+.species-control {
+  background-color: white; /* Or any color you prefer */
   padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-  margin: 10px;
-  top: -40px; /* 将控件向上移动 */
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.25);
 }
 
-.filter-container {
-  display: block;
-  position: relative;
-  padding-left: 20px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.filter-container input {
+.search-bar {
   position: absolute;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 15px;
-  width: 15px;
-  background-color: #eee;
-  border-radius: 50%;
-}
-
-.filter-container:hover input ~ .checkmark {
-  background-color: #ccc;
-}
-
-/* When the radio button is checked, change the checkmark's color */
-.filter-container input[type="radio"]:checked ~ .checkmark {
-  background-color: #333;
-}
-
-.checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
+  top: 10px; /* Adjust as needed */
+  left: 15%;
+  z-index: 1000; /* Ensure it's on top of other map layers */
+  background-color: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }

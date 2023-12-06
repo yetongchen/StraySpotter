@@ -165,10 +165,11 @@ const updatePost = async (
         //const datetime = validation.generateCurrentDate();
 
         const postCollection = await post();
-        
-        // update new photo
-        if (photo_url !== null) {
 
+        // update new photo
+        if (photo_url !== null && photo_url !== undefined) {
+            console.log(photo_url);
+                console.log(photo_url !== null);
             if (isinstance(variable, str)) {
                 photo_url = await createURLByPath(photo_url);
             } else {
@@ -179,8 +180,6 @@ const updatePost = async (
             const temp = await postCollection.findOne({_id: new ObjectId(post_id)});
             photo_url = temp.photo_url;
         }
-
-       
 
         const updatedPost = await postCollection.findOneAndUpdate(
             {_id: new ObjectId(post_id)},

@@ -8,7 +8,10 @@ import Signup from './components/Signup';
 import Login from './components/Login';
 import UserCenter from './components/UserCenter';
 import PostForm from './components/PostForm';
+import EditPostForm from "./components/PostEdit";
+import PostDelete from "./components/PostDelete";
 import './App.css';
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -75,6 +78,8 @@ function App() {
         <Route path="/signup" element={user ? <Navigate to={"/"} /> : <Signup />} />
         <Route path="/user-center" element={<UserCenter />} />
         <Route path="/new" element={<PostForm />} />
+        <Route path="/post/edit/:id" element={<EditPostForm />} />
+        <Route path="/post/delete/:id" element={<PostDelete />}/>
       </Routes>
     </div>
     </Router>

@@ -50,7 +50,7 @@ const UserCenter = () => {
         if (userInfo) {
           const response = await axios.get(`http://localhost:4000/post/user/${userInfo._id}`);
         setPosts(response.data);
-        console.log(response.data);
+        console.log("here",response.data);
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -86,6 +86,9 @@ const UserCenter = () => {
                   <p><strong>Species:</strong> {post.species ? post.species : "Unknown"}</p>
                   <p><strong>Gender:</strong> {post.gender ? post.gender : "Unknown"}</p>
                   <p><strong>Health Condition:</strong> {post.health_condition ? post.health_condition : "Unknown"}</p>
+                  <div><NavLink to={`/post/edit/${post._id}`}>Edit</NavLink></div>
+                <div><NavLink to={`/post/delete/${post._id}`}>Delete</NavLink></div>
+
               </div>
           ))}
         </div>

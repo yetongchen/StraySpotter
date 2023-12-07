@@ -76,7 +76,6 @@ const StrayMap = () => {
       };
   
       // Add event listener for keydown
-      console.log("post form listener");
       window.addEventListener('keydown', handleKeyDownWindowsLocation);
   
       // Cleanup the event listener
@@ -181,7 +180,6 @@ const StrayMap = () => {
       };
   
       // Add event listener for keydown
-      console.log("post form listener");
       window.addEventListener('keydown', handleKeyDownWindowsLocation);
   
       // Cleanup the event listener

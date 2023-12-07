@@ -88,8 +88,6 @@ const createPost = async (
         const insertInfo = await postCollection.insertOne(singlePost);
         if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Could not add user.";
 
-        console.log(address);
-
         const location = await locationData.createLocation(address, insertInfo.insertedId.toString());
         const updatedInfo = await postCollection.updateOne(
             { _id: insertInfo.insertedId },
@@ -182,9 +180,7 @@ const updatePost = async (
 
         // update new photo
         if (photo_url !== null && photo_url !== undefined) {
-            console.log(photo_url);
-                console.log(photo_url !== null);
-            if (isinstance(variable, str)) {
+            if(typeof photo_url === 'string') {
                 photo_url = await createURLByPath(photo_url);
             } else {
                 photo_url = await createURLByFile(photo_url);

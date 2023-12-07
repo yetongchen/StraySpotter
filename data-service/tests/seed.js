@@ -29,12 +29,6 @@ for (const line of lines) {
 
     // Assuming each line has two values separated by a semicolon
     
-    i = i + 1;
-
-    if (i === 20) {
-        break;
-        
-    }
     const user_id = user_id_temp;
     const species = parts[0].trim();
     const gender = parts[1].trim();

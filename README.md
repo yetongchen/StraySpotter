@@ -52,7 +52,7 @@ To get a local copy up and running, follow these steps:
 3. Import initial data:
 ```sh
   cd data-service
-  node test/seed.js
+  node tests/seed.js
 ```
 
 4. Install NPM packages in react-service:

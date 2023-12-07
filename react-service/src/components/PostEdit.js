@@ -152,7 +152,7 @@ const EditPostForm = () => {
         <form onSubmit={handleSubmit}>
             <div>
                 <label>Species: </label>
-                <select name="species" value={post.species} onChange={handleChange}>
+                <select name="species"  aria-label="species" value={post.species} onChange={handleChange}>
                     <option value="">Select Species</option>
                     <option value="Cat">Cat</option>
                     <option value="Dog">Dog</option>
@@ -161,7 +161,7 @@ const EditPostForm = () => {
             </div>
             <div>
                 <label>Gender: </label>
-                <select name="gender" value={post.gender} onChange={handleChange}>
+                <select name="gender" aria-label="gender" value={post.gender} onChange={handleChange}>
                     <option value="">Select Gender</option>
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
@@ -169,7 +169,7 @@ const EditPostForm = () => {
             </div>
             <div>
                 <label>Health Condition: </label>
-                <select name="health_condition" value={post.health_condition} onChange={handleChange}>
+                <select name="health_condition" aria-label="health condition" value={post.health_condition} onChange={handleChange}>
                     <option value="">Select Health Condition</option>
                     <option value="Healthy">Healthy</option>
                     <option value="Injured">Injured</option>
@@ -189,10 +189,12 @@ const EditPostForm = () => {
             </div>
             <img src={post.photo_url} alt="Preview" style={{ maxWidth: '400px' }} />
             <div>
+                <label>Photo: </label>
                 <input
                     type="file"
                     name="photo_url"
                     onChange={handleFileChange}
+                    aria-label='photo'
                 />
             </div>
             <button type="submit">Submit</button>

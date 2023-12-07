@@ -11,6 +11,7 @@ import PostForm from './components/PostForm';
 import EditPostForm from "./components/PostEdit";
 import PostDelete from "./components/PostDelete";
 import './App.css';
+import NewPostIcon from './images/add.png';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -118,7 +119,9 @@ function App() {
 
     return (
       
-      <NavLink aria-label={message} ref={ref} to={path} onKeyDown={(e) => handleKeyDown(e, index)}> {message}
+      <NavLink aria-label={message} ref={ref} to={path} onKeyDown={(e) => handleKeyDown(e, index)} > 
+        {path === '/new' ? <img src={NewPostIcon} alt='Upload a New Post' style={{ verticalAlign: 'middle', height: '20px', marginRight: '5px' }}/> : ''}
+        {message}
       </NavLink>
       
     );

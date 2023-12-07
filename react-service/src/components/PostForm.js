@@ -139,7 +139,7 @@ const PostForm = () => {
     <form onSubmit={handleSubmit}>
       <div>
       <label > Species: </label>
-      <select ref={buttonRefs.current[0]} onKeyDown={(e) => handleKeyDown(e, 0, buttonRefs)} name="species" value={formData.species} onChange={handleChange}>
+      <select ref={buttonRefs.current[0]} onKeyDown={(e) => handleKeyDown(e, 0, buttonRefs)} name="species" aria-label="species" value={formData.species} onChange={handleChange}>
         <option value="">Select Species</option>
         <option value="Cat">Cat</option>
         <option value="Dog">Dog</option>
@@ -148,7 +148,7 @@ const PostForm = () => {
       </div>
       <div>
       <label>Gender: </label>
-      <select ref={buttonRefs.current[1]} onKeyDown={(e) => handleKeyDown(e, 1, buttonRefs)} name="gender" value={formData.gender} onChange={handleChange}>
+      <select ref={buttonRefs.current[1]} onKeyDown={(e) => handleKeyDown(e, 1, buttonRefs)} name="gender" aria-label="gender" value={formData.gender} onChange={handleChange}>
         <option value="">Select Gender</option>
         <option value="Female">Female</option>
         <option value="Male">Male</option>
@@ -156,7 +156,7 @@ const PostForm = () => {
       </div>
       <div>
       <label>Health Condition: </label>
-      <select ref={buttonRefs.current[2]} onKeyDown={(e) => handleKeyDown(e, 2, buttonRefs)} name="health_condition" value={formData.health_condition} onChange={handleChange}>
+      <select ref={buttonRefs.current[2]} onKeyDown={(e) => handleKeyDown(e, 2, buttonRefs)} name="health_condition" aria-label="health condition" value={formData.health_condition} onChange={handleChange}>
         <option value="">Select Health Condition</option>
         <option value="Healthy">Healthy</option>
         <option value="Injured">Injured</option>
@@ -178,10 +178,12 @@ const PostForm = () => {
       type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
       </div>
       <div>
+      <label>Photo: </label>
       <input ref={buttonRefs.current[5]} onKeyDown={(e) => handleKeyDown(e, 5, buttonRefs)}
         type="file"
         name="photo_url"
         onChange={handleFileChange}
+        aria-label='photo'
       />
       </div>
       <button ref={buttonRefs.current[6]} onKeyDown={(e) => handleKeyDown(e, 6, buttonRefs)}

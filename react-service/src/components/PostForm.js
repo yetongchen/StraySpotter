@@ -22,7 +22,7 @@ const PostForm = () => {
     const buttonRefs = useRef([]);
 
     const max_length_this_page = 7;
-    const length = 50;
+    const length = 7;
 
     buttonRefs.current = buttonRefs.current.slice(0, length);
           while (buttonRefs.current.length < length) {

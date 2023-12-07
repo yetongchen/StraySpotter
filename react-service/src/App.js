@@ -10,6 +10,7 @@ import UserCenter from './components/UserCenter';
 import PostForm from './components/PostForm';
 import EditPostForm from "./components/PostEdit";
 import PostDelete from "./components/PostDelete";
+import Help from "./components/Help";
 import './App.css';
 import NewPostIcon from './images/add.png';
 
@@ -20,8 +21,8 @@ function App() {
 
   const buttonRefs = useRef([]);
 
-  let max_length_this_page = 4;
-  const length = 50;
+  let max_length_this_page = 5;
+  const length = 5;
 
   buttonRefs.current = buttonRefs.current.slice(0, length);
         while (buttonRefs.current.length < length) {
@@ -96,19 +97,13 @@ function App() {
     
     const handleKeyDown = (e, index) => {
 
-      console.log(e.key);
       if (e.key === 'ArrowLeft' && index > 0) {
         // Move to the previous button
         console.log("move left");
-        console.log(buttonRefs.current[index]);
-        console.log(buttonRefs.current[index - 1]);
         buttonRefs.current[index - 1].current.focus();
       } else if (e.key === 'ArrowRight' && index < max_length_this_page - 1) {
         // Move to the previous button
         console.log("move right");
-        console.log(index);
-        console.log(buttonRefs.current[index]);
-        console.log(buttonRefs.current[index + 1]);
         buttonRefs.current[index + 1].current.focus();
       } else if (e.key === 'Enter') {
         console.log(ref);
@@ -175,6 +170,9 @@ function App() {
           <li ria-label='login/logout' onClick={user ? handleLogout : null}>
           <NavLinkReplaceLoginOut ref={buttonRefs.current[3]} index ={3} />
           </li>
+          <li>
+            <NavLinkReplace ref={buttonRefs.current[4]} path={'/help'} message={'Help'} index ={4} />
+          </li>
         </ul>
       </nav>
       <Routes>
@@ -186,6 +184,7 @@ function App() {
         <Route path="/new" element={user ? <PostForm /> : <Navigate to={"/login"} />} />
         <Route path="/post/edit/:id" element={user ? <EditPostForm /> : <Navigate to={"/"} />} />
         <Route path="/post/delete/:id" element={user ? <PostDelete /> : <Navigate to={"/"} />} />
+        <Route path="/help" element={<Help/>} />
       </Routes>
     </div>
     </Router>

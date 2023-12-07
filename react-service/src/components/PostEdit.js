@@ -84,10 +84,11 @@ const EditPostForm = () => {
     }, [user]);
 
     useEffect(() => {
-        if (userInfo && userInfo._id) {
+        if (userInfo && post) {
             if (userInfo._id !== post.user_id) {
+                console.log(userInfo._id, post.user_id);
                 alert("You can only edit your posts");
-                navigate('/');    
+                navigate('/');
             }
             setFormData(prevState => ({
                 ...prevState,
@@ -152,7 +153,7 @@ const EditPostForm = () => {
         <form onSubmit={handleSubmit}>
             <div>
                 <label>Species: </label>
-                <select name="species"  aria-label="species" value={post.species} onChange={handleChange}>
+                <select name="species" aria-label="species" value={post.species} onChange={handleChange}>
                     <option value="">Select Species</option>
                     <option value="Cat">Cat</option>
                     <option value="Dog">Dog</option>

@@ -40,10 +40,12 @@ const PostDelete = () => {
     }, [user]);
 
     useEffect(() => {
-        if (userInfo._id !== post.user_id) {
-            alert("You can only edit your posts");
-            navigate('/');    
-        };
+        if (userInfo && post) {
+            if (userInfo._id !== post.user_id) {
+                alert("You can only edit your posts");
+                navigate('/');    
+            };
+        }       
     }, [userInfo, navigate, post]);
 
     useEffect(() => {

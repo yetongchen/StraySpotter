@@ -158,7 +158,8 @@ const StrayMap = () => {
       try {
         const response = await axios.post(`http://localhost:4000/map/search`, 
           { address: address });
-        const { coordinate, postList } = response.data;
+        // const { coordinate, postList } = response.data;
+        const coordinate = response.data.coordinate;
         console.log(response.data);
         setSearchLocation(coordinate);
         //setPosts(postList);

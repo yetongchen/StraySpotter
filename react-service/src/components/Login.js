@@ -10,9 +10,9 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        let user = null;
+        // let user = null;
         try {
-        user = await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email, password);
         if (auth.currentUser) {
             navigate("/");
         }

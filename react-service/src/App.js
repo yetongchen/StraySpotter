@@ -163,9 +163,9 @@ function App() {
           <li >
             <NavLinkReplace ref={buttonRefs.current[0]} path={'/'} message={'Map'} index ={0}/>
           </li>
-          {user ? <li>
+          <li>
             <NavLinkReplace ref={buttonRefs.current[1]} path={'/new'} message={'New Post'} index ={1} />
-          </li> : null}
+          </li>
           {user ? <li aria-label='User Center'>
             <NavLinkReplace ref={buttonRefs.current[2]} path={'/user-center'} message={'User Center'} index ={2} />
           </li> : null}  
@@ -179,10 +179,10 @@ function App() {
         <Route path="/animal/:id" element={<PostDetail />} />
         <Route path="/login" element={user ? <Navigate to={"/"} /> : <Login />} />
         <Route path="/signup" element={user ? <Navigate to={"/"} /> : <Signup />} />
-        <Route path="/user-center" element={<UserCenter />} />
-        <Route path="/new" element={<PostForm />} />
-        <Route path="/post/edit/:id" element={<EditPostForm />} />
-        <Route path="/post/delete/:id" element={<PostDelete />}/>
+        <Route path="/user-center" element={user ? <UserCenter /> : <Navigate to={"/"} />} />
+        <Route path="/new" element={user ? <PostForm /> : <Navigate to={"/login"} />} />
+        <Route path="/post/edit/:id" element={user ? <EditPostForm /> : <Navigate to={"/"} />} />
+        <Route path="/post/delete/:id" element={user ? <PostDelete /> : <Navigate to={"/"} />} />
       </Routes>
     </div>
     </Router>

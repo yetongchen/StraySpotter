@@ -5,8 +5,8 @@ import {useNavigate, useParams} from 'react-router-dom';
 
 const EditPostForm = () => {
     const {id} = useParams();
-    const [loading, setLoading] = useState(true);
-    const [notFound, setNotFound] = useState(true);
+    // const [loading, setLoading] = useState(true);
+    // const [notFound, setNotFound] = useState(true);
 
     const [user, setUser] = useState(null);
     const auth = getAuth(); // 获取 Firebase Auth 的实例
@@ -46,13 +46,13 @@ const EditPostForm = () => {
             .then((data) => {
                 setPost(data);
                 setFormData(data);
-                setLoading(false);
-                setNotFound(false);
+                // setLoading(false);
+                // setNotFound(false);
             })
             .catch ((e) => {
                 console.error("Error fetching event", e);
-                setNotFound(true);
-                setLoading(false);
+                // setNotFound(true);
+                // setLoading(false);
             });
     }, [id]);
 
@@ -85,13 +85,17 @@ const EditPostForm = () => {
 
     useEffect(() => {
         if (userInfo && userInfo._id) {
+            if (userInfo._id !== post.user_id) {
+                alert("You can only edit your posts");
+                navigate('/');    
+            }
             setFormData(prevState => ({
                 ...prevState,
                 user_id: userInfo._id
             }));
         }
 
-    }, [userInfo]); // useEffect will run when `id` changes
+    }, [userInfo, navigate, post]); // useEffect will run when `id` changes
 
 
     const handleChange = (e) => {

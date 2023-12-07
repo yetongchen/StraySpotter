@@ -60,6 +60,7 @@ const UserCenter = () => {
     fetchPosts();
   }, [userInfo]);
 
+
   if (loading) {
     return (
         <div>
@@ -79,13 +80,25 @@ const UserCenter = () => {
         <div><NavLink to="/new">Upload a new post</NavLink></div>
         <div>
           {posts.map(post => (
-              <div key={post._id} className='user-post'>
-                  <img src={post.photo_url ? post.photo_url : noImage} alt={`Found ${post.species}`} className="post-image" style={{ maxWidth: '300px' }}/>
-                  <h2>Details about the Found {post.species === "Others" ? "Animal" : post.species}</h2>
-                  <p><strong>ID:</strong> <NavLink to={`/animal/${post._id}`}>{post._id}</NavLink><br /></p>
-                  <p><strong>Species:</strong> {post.species ? post.species : "Unknown"}</p>
-                  <p><strong>Gender:</strong> {post.gender ? post.gender : "Unknown"}</p>
-                  <p><strong>Health Condition:</strong> {post.health_condition ? post.health_condition : "Unknown"}</p>
+              <div aria-label='This is the Post link' key={post._id} className='user-post'>
+                  <div aria-label='This is the image'>
+                    <img src={post.photo_url ? post.photo_url : noImage} alt={`Found ${post.species}`} className="post-image" style={{ maxWidth: '300px' }}/>
+                  </div>
+                  <div>
+                    <h2>Details about the Found {post.species === "Others" ? "Animal" : post.species}</h2>
+                  </div>
+                  <div>
+                    <p><strong>ID:</strong> <NavLink to={`/animal/${post._id}`}>{post._id}</NavLink><br /></p>
+                  </div> 
+                  <div>
+                    <p><strong>Species:</strong> {post.species ? post.species : "Unknown"}</p>
+                  </div>
+                  <div>
+                    <p><strong>Gender:</strong> {post.gender ? post.gender : "Unknown"}</p>
+                  </div>
+                  <div>
+                    <p><strong>Health Condition:</strong> {post.health_condition ? post.health_condition : "Unknown"}</p>
+                  </div>
                   <div><NavLink to={`/post/edit/${post._id}`}>Edit</NavLink></div>
                 <div><NavLink to={`/post/delete/${post._id}`}>Delete</NavLink></div>
 

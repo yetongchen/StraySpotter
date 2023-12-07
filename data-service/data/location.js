@@ -178,6 +178,7 @@ const removeLocationByPostId = async (post_id, location_id) => {
   };
 
 export default {
+    convertLocation,
     createLocation,
     getLocationById,
     getPostsByAddress,

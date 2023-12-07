@@ -83,8 +83,8 @@ const exportedMethods = {
             throw `Error: description should be a valid string (no empty spaces)`;
         }
         description = description.trim();
-        if(description.length < 5 || description > 10000){
-            throw `Error: description should have more than 5 chars and less than 10 thousand chars`;
+        if(description > 10000){
+            throw `Error: description should have less than 10 thousand chars`;
         }
         return description;
     },
@@ -199,6 +199,12 @@ const exportedMethods = {
             throw "Error: Gender must be either 'male' or 'Female'";
         }
         return gender;
+    },
+
+    isValidUrl(url) {
+        const urlPattern = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+|localhost)(:\d+)?(\/\S*)?$/;
+
+        return urlPattern.test(url);
     }
 }
 export default exportedMethods;

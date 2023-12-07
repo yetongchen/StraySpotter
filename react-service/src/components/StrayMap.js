@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 // import ReactDOM from 'react-dom';
 // import { NavLink } from 'react-router-dom';
 import axios from 'axios';
@@ -12,10 +12,12 @@ import 'leaflet.markercluster';
 import marker_icon from '../images/pin.png';
 import '../App.css';
 
+
 const StrayMap = () => {
   const [posts, setPosts] = useState([]);
   const [centerLocation, setCenterLocation] = useState([40.745255, -74.034775]);
   const [searchLocation, setSearchLocation] = useState(null);
+  
   const [visibleSpecies, setVisibleSpecies] = useState({
     cat: true,
     dog: true,
@@ -26,10 +28,12 @@ const StrayMap = () => {
     iconUrl: marker_icon, 
     iconSize: [55, 55], // Size of the icon
     iconAnchor: [27, 94], // Point of the icon which will correspond to marker's location
-    popupAnchor: [0, -76] // Point from which the popup should open relative to the iconAnchor
+    popupAnchor: [0, -76], // Point from which the popup should open relative to the iconAnchor
+    alt: "Map marker icon"
   });
 
   useEffect(() => {
+
     const fetchPosts = async () => {
       try {
         const response = await axios.get('http://localhost:4000/post');
@@ -51,18 +55,66 @@ const StrayMap = () => {
 
   const SpeciesCheckboxControl = () => {
     const map = useMap();
+    
+    const buttonRefs = useRef([]);
+
+    const length = 3;
+
+    buttonRefs.current = buttonRefs.current.slice(0, length);
+          while (buttonRefs.current.length < length) {
+              buttonRefs.current.push(React.createRef());
+    }
+
+    useEffect(() => {
+      const handleKeyDownWindowsLocation = (event) => {
+
+        if (event.key === "f" && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();  // Prevent the default behavior
+          buttonRefs.current[0].current.focus();
+          console.log("go to species filter of map");
+        }   
+      };
   
+      // Add event listener for keydown
+      console.log("post form listener");
+      window.addEventListener('keydown', handleKeyDownWindowsLocation);
+  
+      // Cleanup the event listener
+      return () => {
+        window.removeEventListener('keydown', handleKeyDownWindowsLocation);
+      };
+    }, []);
+
     useEffect(() => {
       const controlDiv = L.DomUtil.create('div', 'species-control');
       controlDiv.innerHTML = `
         <form>
-          <label><input type="checkbox" class="species-checkbox" value="cat" ${visibleSpecies.cat ? 'checked' : ''} /> Cats</label><br>
-          <label><input type="checkbox" class="species-checkbox" value="dog" ${visibleSpecies.dog ? 'checked' : ''} /> Dogs</label><br>
-          <label><input type="checkbox" class="species-checkbox" value="others" ${visibleSpecies.others ? 'checked' : ''} /> Others</label>
+          <label><input type="checkbox" class="species-checkbox" value="cat" ${visibleSpecies.cat ? 'checked' : ''}  aria-label="Filter for cats"/> Cats</label><br>
+          <label><input type="checkbox" class="species-checkbox" value="dog" ${visibleSpecies.dog ? 'checked' : ''}  aria-label="Filter for dogs"/> Dogs</label><br>
+          <label><input type="checkbox" class="species-checkbox" value="others" ${visibleSpecies.others ? 'checked' : '' } aria-label="Filter for others animal"/> Others</label>
         </form>
       `;
 
+       // Assign refs
+    buttonRefs.current[0].current = controlDiv.querySelector('.species-checkbox[value="cat"]');
+    buttonRefs.current[1].current = controlDiv.querySelector('.species-checkbox[value="dog"]');
+    buttonRefs.current[2].current = controlDiv.querySelector('.species-checkbox[value="others"]');
+
   
+    const handleKeyPress = (event, index) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        buttonRefs.current[index].current.click();
+        buttonRefs.current[index].current.focus();
+      }
+    };
+
+    // Attach the keypress event listener to each checkbox
+    const checkboxesFilter = controlDiv.querySelectorAll('.species-checkbox');
+    checkboxesFilter.forEach((checkbox, index) => {
+      checkbox.addEventListener('keypress', (event) => handleKeyPress(event, index));
+    });
+
       const onInputChange = (e) => {
         setVisibleSpecies(prevState => ({
           ...prevState,
@@ -100,10 +152,12 @@ const StrayMap = () => {
     }, [map]);
   
     const handleSearch = async () => { 
+      
+      alert('Search initiated'); 
       try {
         const response = await axios.post(`http://localhost:4000/map/search`, 
           { address: address });
-        //const { coordinate, postList } = response.data;
+        // const { coordinate, postList } = response.data;
         const coordinate = response.data.coordinate;
         console.log(response.data);
         setSearchLocation(coordinate);
@@ -114,15 +168,47 @@ const StrayMap = () => {
       }
     };
 
+    const buttonRef = useRef(null);
+
+    useEffect(() => {
+      const handleKeyDownWindowsLocation = (event) => {
+
+        if (event.key === "l" && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();  // Prevent the default behavior
+          buttonRef.current.focus();
+          console.log("go to search location bar");
+        }   
+      };
+  
+      // Add event listener for keydown
+      console.log("post form listener");
+      window.addEventListener('keydown', handleKeyDownWindowsLocation);
+  
+      // Cleanup the event listener
+      return () => {
+        window.removeEventListener('keydown', handleKeyDownWindowsLocation);
+      };
+    }, []);
+
+
     return (
-      <div className='search-bar'>
+      <div  className='search-bar'>
         <input
           type="text"
+          ref={buttonRef}
           placeholder="Search location..."
           value={address}
           onChange={(e) => setAddress(e.target.value)}
+          aria-label="Location Search bar"
         />
-        <button onClick={handleSearch}>Search</button>
+        
+        <button
+          aria-label="Click or press enter to search"
+          onClick={handleSearch}
+        >
+          Search
+        </button>
+
       </div>
     );
   };  

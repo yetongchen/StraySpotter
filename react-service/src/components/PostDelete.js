@@ -1,14 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, NavLink, useNavigate } from 'react-router-dom'; // Make sure to include useNavigate
 import axios from 'axios';
-
-// ... rest of the code ...
+import { getAuth, onAuthStateChanged} from "firebase/auth";
 
 
 const PostDelete = () => {
     const { id } = useParams();
     const [post, setPost] = useState(null);
     const navigate = useNavigate();
+
+    const auth = getAuth();
+    const [user, setUser] = useState(null);
+    const [userInfo, setUserInfo] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, setUser);
+        return () => unsubscribe();
+    }, [auth]);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+        if (user) {
+            try {
+            const response = await axios.get(
+                `http://localhost:4000/user/${user.uid}`
+            );
+            setUserInfo(response.data);
+            console.log(response.data);
+            } catch (error) {
+            console.error("Error fetching user info:", error);
+            }
+        } else {
+            // if the user is not logged in，clear userInfo
+            setUserInfo(null);
+        }
+        };
+
+        fetchUserInfo();
+    }, [user]);
+
+    useEffect(() => {
+        if (userInfo._id !== post.user_id) {
+            alert("You can only edit your posts");
+            navigate('/');    
+        };
+    }, [userInfo, navigate, post]);
 
     useEffect(() => {
         const fetchPost = async () => {

@@ -5,8 +5,8 @@ import {useNavigate, useParams} from 'react-router-dom';
 
 const EditPostForm = () => {
     const {id} = useParams();
-    const [loading, setLoading] = useState(true);
-    const [notFound, setNotFound] = useState(true);
+    // const [loading, setLoading] = useState(true);
+    // const [notFound, setNotFound] = useState(true);
 
     const [user, setUser] = useState(null);
     const auth = getAuth(); // 获取 Firebase Auth 的实例
@@ -46,13 +46,13 @@ const EditPostForm = () => {
             .then((data) => {
                 setPost(data);
                 setFormData(data);
-                setLoading(false);
-                setNotFound(false);
+                // setLoading(false);
+                // setNotFound(false);
             })
             .catch ((e) => {
                 console.error("Error fetching event", e);
-                setNotFound(true);
-                setLoading(false);
+                // setNotFound(true);
+                // setLoading(false);
             });
     }, [id]);
 
@@ -85,13 +85,17 @@ const EditPostForm = () => {
 
     useEffect(() => {
         if (userInfo && userInfo._id) {
+            if (userInfo._id !== post.user_id) {
+                alert("You can only edit your posts");
+                navigate('/');    
+            }
             setFormData(prevState => ({
                 ...prevState,
                 user_id: userInfo._id
             }));
         }
 
-    }, [userInfo]); // useEffect will run when `id` changes
+    }, [userInfo, navigate, post]); // useEffect will run when `id` changes
 
 
     const handleChange = (e) => {
@@ -124,6 +128,7 @@ const EditPostForm = () => {
         if (formData.photo_url) {
             formDataToSend.append('photo_url', formData.photo_url);
         }
+        console.log(formData.photo_url);
         console.log("formDataToSend", formDataToSend);
         console.log("url: ",`http://localhost:4000/post/${id}`)
         try {
@@ -147,7 +152,7 @@ const EditPostForm = () => {
         <form onSubmit={handleSubmit}>
             <div>
                 <label>Species: </label>
-                <select name="species" value={post.species} onChange={handleChange}>
+                <select name="species"  aria-label="species" value={post.species} onChange={handleChange}>
                     <option value="">Select Species</option>
                     <option value="Cat">Cat</option>
                     <option value="Dog">Dog</option>
@@ -156,7 +161,7 @@ const EditPostForm = () => {
             </div>
             <div>
                 <label>Gender: </label>
-                <select name="gender" value={post.gender} onChange={handleChange}>
+                <select name="gender" aria-label="gender" value={post.gender} onChange={handleChange}>
                     <option value="">Select Gender</option>
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
@@ -164,7 +169,7 @@ const EditPostForm = () => {
             </div>
             <div>
                 <label>Health Condition: </label>
-                <select name="health_condition" value={post.health_condition} onChange={handleChange}>
+                <select name="health_condition" aria-label="health condition" value={post.health_condition} onChange={handleChange}>
                     <option value="">Select Health Condition</option>
                     <option value="Healthy">Healthy</option>
                     <option value="Injured">Injured</option>
@@ -184,10 +189,12 @@ const EditPostForm = () => {
             </div>
             <img src={post.photo_url} alt="Preview" style={{ maxWidth: '400px' }} />
             <div>
+                <label>Photo: </label>
                 <input
                     type="file"
                     name="photo_url"
                     onChange={handleFileChange}
+                    aria-label='photo'
                 />
             </div>
             <button type="submit">Submit</button>

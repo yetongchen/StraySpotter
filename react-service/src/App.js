@@ -10,6 +10,7 @@ import UserCenter from './components/UserCenter';
 import PostForm from './components/PostForm';
 import EditPostForm from "./components/PostEdit";
 import PostDelete from "./components/PostDelete";
+import Help from "./components/Help";
 import './App.css';
 import NewPostIcon from './images/add.png';
 
@@ -176,6 +177,9 @@ function App() {
           <li ria-label='login/logout' onClick={user ? handleLogout : null}>
           <NavLinkReplaceLoginOut ref={buttonRefs.current[3]} index ={3} />
           </li>
+          <li >
+            <NavLinkReplace ref={buttonRefs.current[4]} path={'/help'} message={'Help'} index ={4}/>
+          </li>
         </ul>
       </nav>
       <Routes>
@@ -187,6 +191,7 @@ function App() {
         <Route path="/new" element={user ? <PostForm /> : <Navigate to={"/login"} />} />
         <Route path="/post/edit/:id" element={user ? <EditPostForm /> : <Navigate to={"/"} />} />
         <Route path="/post/delete/:id" element={user ? <PostDelete /> : <Navigate to={"/"} />} />
+        <Route path="/help" element={<Help/>} />
       </Routes>
     </div>
     </Router>

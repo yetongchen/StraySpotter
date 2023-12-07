@@ -49,13 +49,19 @@ To get a local copy up and running, follow these steps:
   npm install
   npm start
 ```
-3. Install NPM packages in react-service:
+3. Import initial data:
+```sh
+  cd data-service
+  node test/seed.js
+```
+
+4. Install NPM packages in react-service:
 ```sh
 cd ../react-service
 npm install
 npm start
 ```
-4. Accessing the Application
+5. Accessing the Application
 Open http://localhost:3000 in your browser to view the application.
 
 ## Views

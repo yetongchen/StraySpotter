@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect} from 'react';
 import { getAuth, onAuthStateChanged} from "firebase/auth";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 
 const PostForm = () => {
     const [user, setUser] = useState(null);
     const auth = getAuth(); // 获取 Firebase Auth 的实例
+    const navigate = useNavigate();
     const [userInfo, setUserInfo] = useState(null); // 新状态来存储从你的后端获取的用户信息
     const [formData, setFormData] = useState({
         user_id: '',
@@ -16,10 +19,21 @@ const PostForm = () => {
         address: ''
     });
 
+    const buttonRefs = useRef([]);
+
+    const max_length_this_page = 7;
+    const length = 50;
+
+    buttonRefs.current = buttonRefs.current.slice(0, length);
+          while (buttonRefs.current.length < length) {
+              buttonRefs.current.push(React.createRef());
+    }
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, setUser);
         return () => unsubscribe();
     }, [auth]);
+
 
     // new useEffect to get userInfo
     useEffect(() => {
@@ -44,6 +58,8 @@ const PostForm = () => {
     }, [user]);
 
     useEffect(() => {
+
+        
         if (userInfo && userInfo._id) {
             setFormData(prevState => ({
                 ...prevState,
@@ -94,16 +110,36 @@ const PostForm = () => {
       );
       // Handle response
       console.log('Success:', response.data);
+      alert("Successfully uploaded!");
+      navigate(`/animal/${response.data._id}`);
     } catch (error) {
       console.error('Error uploading post:', error);
+      alert('Error uploading post:', error.message);
     }
   };
-  
+
+  const handleKeyDown = (e, index, refArray) => {
+
+      // Check if the arrow keys are pressed
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+       
+        e.preventDefault();  // Prevent the default behavior
+        // Determine the next element to focus
+        const nextIndex = e.key === 'ArrowUp' ? index - 1 : index + 1;
+        
+        if (nextIndex >= 0 && nextIndex < max_length_this_page) {
+          
+          refArray.current[nextIndex].current.focus();
+        }
+      } 
+      // Handle other keys if needed
+    }    
+
   return (
     <form onSubmit={handleSubmit}>
       <div>
-      <label>Species: </label>
-      <select name="species" value={formData.species} onChange={handleChange}>
+      <label > Species: </label>
+      <select ref={buttonRefs.current[0]} onKeyDown={(e) => handleKeyDown(e, 0, buttonRefs)} name="species" value={formData.species} onChange={handleChange}>
         <option value="">Select Species</option>
         <option value="Cat">Cat</option>
         <option value="Dog">Dog</option>
@@ -112,7 +148,7 @@ const PostForm = () => {
       </div>
       <div>
       <label>Gender: </label>
-      <select name="gender" value={formData.gender} onChange={handleChange}>
+      <select ref={buttonRefs.current[1]} onKeyDown={(e) => handleKeyDown(e, 1, buttonRefs)} name="gender" value={formData.gender} onChange={handleChange}>
         <option value="">Select Gender</option>
         <option value="Female">Female</option>
         <option value="Male">Male</option>
@@ -120,7 +156,7 @@ const PostForm = () => {
       </div>
       <div>
       <label>Health Condition: </label>
-      <select name="health_condition" value={formData.health_condition} onChange={handleChange}>
+      <select ref={buttonRefs.current[2]} onKeyDown={(e) => handleKeyDown(e, 2, buttonRefs)} name="health_condition" value={formData.health_condition} onChange={handleChange}>
         <option value="">Select Health Condition</option>
         <option value="Healthy">Healthy</option>
         <option value="Injured">Injured</option>
@@ -132,20 +168,24 @@ const PostForm = () => {
       </div>
       <div>
       <label>Description: </label>
-      <input type="text" name="description" value={formData.description} onChange={handleChange} placeholder="Description" />
+      <input ref={buttonRefs.current[3]} onKeyDown={(e) => handleKeyDown(e, 3, buttonRefs)}
+      type="text" name="description" value={formData.description} onChange={handleChange} placeholder="Description" />
       </div>
       <div>
       <label>Address: </label>
-      <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
+      <input ref={buttonRefs.current[4]} onKeyDown={(e) => handleKeyDown(e, 4, buttonRefs)}
+      
+      type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
       </div>
       <div>
-      <input
+      <input ref={buttonRefs.current[5]} onKeyDown={(e) => handleKeyDown(e, 5, buttonRefs)}
         type="file"
         name="photo_url"
         onChange={handleFileChange}
       />
       </div>
-      <button type="submit">Submit</button>
+      <button ref={buttonRefs.current[6]} onKeyDown={(e) => handleKeyDown(e, 6, buttonRefs)}
+       type="submit">Submit</button>
     </form>
   );
 };

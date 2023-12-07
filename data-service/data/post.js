@@ -52,10 +52,12 @@ const createPost = async (
         
         // generate datetime
         const datetime = validation.generateCurrentDate();
-
-
-        if (!photo_url) {
-            photo_url = null;
+        
+        
+        if (validation.isValidUrl(photo_url)) {
+            photo_url = photo_url;
+        } else if (!photo_url || photo_url === 'nan') {
+            photo_url = `https://${bucketName}.s3.amazonaws.com/default.jpg`;
         } else if(typeof photo_url === 'string'){
             photo_url = await createURLByPath(photo_url);
         } else {
@@ -74,10 +76,19 @@ const createPost = async (
             location_id: null
         };
 
+      
+        try {
+            let any = await locationData.convertLocation(address);
+        } catch (error) {
+            console.log(any);
+            throw error;
+        }
+  
         const postCollection = await post();
         const insertInfo = await postCollection.insertOne(singlePost);
         if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Could not add user.";
 
+        console.log(address);
 
         const location = await locationData.createLocation(address, insertInfo.insertedId.toString());
         const updatedInfo = await postCollection.updateOne(
@@ -87,6 +98,8 @@ const createPost = async (
           if (!updatedInfo) throw "location_id update failed";
 
         // save post_id to user collection
+
+  
         const userCollection = await user();
 
         const updatedUser = await userCollection.findOneAndUpdate(
@@ -94,10 +107,11 @@ const createPost = async (
             {$addToSet: {posts: insertInfo.insertedId.toString()}},
             {returnDocument: 'after'} // to get the updated document
         );
+      
         if (!updatedUser) {
             throw "Could not find or update user with post information.";
         }
-
+  
         // return created post object
         const createdPost = getPostByPostId(insertInfo.insertedId.toString());
         return createdPost;
@@ -165,11 +179,12 @@ const updatePost = async (
         //const datetime = validation.generateCurrentDate();
 
         const postCollection = await post();
-        
-        // update new photo
-        if (photo_url !== null) {
 
-            if (isinstance(variable, str)) {
+        // update new photo
+        if (photo_url !== null && photo_url !== undefined) {
+            console.log(photo_url);
+            console.log(photo_url !== null);
+            if (typeof photo_url === 'string') {
                 photo_url = await createURLByPath(photo_url);
             } else {
                 photo_url = await createURLByFile(photo_url);
@@ -179,8 +194,6 @@ const updatePost = async (
             const temp = await postCollection.findOne({_id: new ObjectId(post_id)});
             photo_url = temp.photo_url;
         }
-
-       
 
         const updatedPost = await postCollection.findOneAndUpdate(
             {_id: new ObjectId(post_id)},
@@ -208,7 +221,6 @@ const updatePost = async (
         throw error;
     }
 };
-
 
 const getPostByPostId = async (
     post_id

@@ -37,29 +37,27 @@ To get a local copy up and running, follow these steps:
 ### Prerequisites
 - MongoDB
 - Node.js
+Please make sure MongoDB is running and port `3000` and `4000` are not occupied.
 
 ### Installation
 1. Clone the repository:
 ```sh
   git clone https://github.com/yetongchen/StraySpotter.git
 ```
-2. Install NPM packages in data-service:
+2. Install NPM packages in data-service and import initial data:
 ```sh
   cd data-service
   npm install
+  npm run seed
   npm start
 ```
-3. Import initial data:
-```sh
-  cd data-service
-  node tests/seed.js
-```
+The import of initial data might take around 3 minutes. We appreciate your patience during this process.
 
-4. Install NPM packages in react-service:
+4. Open another terminal and install NPM packages in react-service:
 ```sh
-cd ../react-service
-npm install
-npm start
+  cd react-service
+  npm install
+  npm start
 ```
 5. Accessing the Application
 Open http://localhost:3000 in your browser to view the application.

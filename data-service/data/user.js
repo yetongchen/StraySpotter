@@ -61,10 +61,10 @@ const createUser = async (id, email, name) => {
     };
     
     const insertInfo = await userdb.insertOne(UserData);
-    console.log("insert", insertInfo);
+    // console.log("insert", insertInfo);
     if (!insertInfo.acknowledged || !insertInfo.insertedId) throw "Can not insert this user.";
     const userInserted = await getUserById(insertInfo.insertedId);
-    console.log(userInserted);
+    // console.log(userInserted);
     return userInserted;
 };
 

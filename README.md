@@ -60,7 +60,7 @@ The import of initial data might take around 3 minutes. We appreciate your patie
   npm start
 ```
 5. Accessing the Application
-Open http://localhost:3000 in your browser to view the application.
+Open http://localhost:3000 in your browser and enjoy! Please note that the majority of our initial data is focused on Seattle and Hoboken.
 
 ## Views
 
